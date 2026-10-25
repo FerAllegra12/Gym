@@ -1,4 +1,4 @@
-const CACHE = "gym-v4";
+const CACHE = "gym-v5";
 const ARCHIVOS = ["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));

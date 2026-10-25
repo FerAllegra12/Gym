@@ -82,13 +82,13 @@ h2{font-size:17px;font-weight:650;margin:0}
 .guia{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .mapa-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mapa-head .seg{margin:0;width:170px;flex:none}
-.figura svg{display:block;width:min(190px,60vw);height:auto;margin:8px auto 0}
-.sil > *{fill:#ffffff;stroke:#dcdcd6;stroke-width:1.2}
+.figura svg{display:block;width:min(230px,70vw);height:auto;margin:8px auto 0}
 .zona{cursor:pointer}
-.zona > *{fill:var(--acc);fill-opacity:.14;stroke:var(--acc);stroke-width:1.4;stroke-dasharray:3 2}
-.zona.on > *{fill-opacity:.55;stroke-dasharray:none}
 .zona-no{pointer-events:none}
-.zona-no > *{fill:none;stroke:none}
+.cuerpo *{fill:url(#gcuerpo);stroke:#7f8691;stroke-width:1}
+.zona-no *{fill:#e4e7eb;stroke:#9aa0a9;stroke-width:.8}
+.zona *{fill:#ffb48a;fill-opacity:.6;stroke:#ff6a1f;stroke-width:1.2;stroke-dasharray:3 2}
+.zona.on *{fill:url(#gnaranja);fill-opacity:1;stroke:#c24509;stroke-width:1;stroke-dasharray:none}
 .aclar{font-size:13px;color:var(--mute);text-align:center;margin:8px 0 0}
 .centro{text-align:center;margin-top:4px}
 .ejx{padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:8px}
@@ -182,28 +182,34 @@ const ZONAS = {
 };
 const MAPA = {
   frente: {
-    "pecho-arriba": '<rect x="66" y="98" width="68" height="22" rx="10"/>',
-    "pecho-medio": '<rect x="66" y="120" width="68" height="22" rx="10"/>',
-    "pecho-abajo": '<rect x="68" y="142" width="64" height="18" rx="9"/>',
-    "hombro-adelante": '<ellipse cx="62" cy="100" rx="12" ry="14"/><ellipse cx="138" cy="100" rx="12" ry="14"/>',
-    "hombro-costado": '<ellipse cx="46" cy="106" rx="10" ry="12"/><ellipse cx="154" cy="106" rx="10" ry="12"/>',
-    "biceps": '<rect x="40" y="120" width="14" height="40" rx="7"/><rect x="146" y="120" width="14" height="40" rx="7"/>',
-    "abdo-recto": '<rect x="88" y="176" width="24" height="58" rx="6"/>',
-    "abdo-oblicuos": '<rect x="74" y="176" width="12" height="58" rx="6"/><rect x="114" y="176" width="12" height="58" rx="6"/>',
-    "cuadriceps": '<rect x="80" y="254" width="18" height="110" rx="9"/><rect x="102" y="254" width="18" height="110" rx="9"/>'
+    "pecho-arriba": '<path d="M100 98 Q84 88 66 96 Q60 108 70 118 Q88 122 100 116Z"/>',
+    "pecho-medio": '<path d="M100 118 Q86 118 74 124 Q70 136 80 144 Q94 146 100 138Z"/>',
+    "pecho-abajo": '<path d="M100 140 Q88 146 80 150 Q84 160 100 158Z"/>',
+    "hombro-adelante": '<path d="M74 84 Q56 84 52 102 Q52 124 62 132 Q72 122 74 104Z"/>',
+    "hombro-costado": '<path d="M56 84 Q40 92 38 112 Q40 128 50 132 Q52 110 56 96Z"/>',
+    "biceps": '<path d="M52 134 Q44 150 42 172 Q46 182 56 178 Q62 156 64 136Z"/>',
+    "abdo-recto": '<path d="M88 166 Q96 162 100 166 L100 226 Q94 230 88 226Z"/>',
+    "abdo-oblicuos": '<path d="M72 170 Q80 166 86 170 Q88 196 86 226 Q76 222 70 210 Q68 190 72 170Z"/>',
+    "cuadriceps": '<path d="M70 262 Q84 252 98 262 L98 336 Q90 348 78 340 Q70 306 70 262Z"/>'
   },
   espalda: {
-    "dorsal": '<rect x="66" y="100" width="14" height="96" rx="7"/><rect x="120" y="100" width="14" height="96" rx="7"/>',
-    "espalda-media": '<rect x="84" y="100" width="32" height="40" rx="8"/>',
-    "lumbar": '<rect x="84" y="144" width="32" height="52" rx="8"/>',
-    "hombro-atras": '<ellipse cx="62" cy="100" rx="12" ry="14"/><ellipse cx="138" cy="100" rx="12" ry="14"/>',
-    "triceps": '<rect x="40" y="120" width="14" height="40" rx="7"/><rect x="146" y="120" width="14" height="40" rx="7"/>',
-    "gluteos": '<rect x="78" y="200" width="44" height="40" rx="14"/>',
-    "isquios": '<rect x="80" y="246" width="18" height="62" rx="9"/><rect x="102" y="246" width="18" height="62" rx="9"/>',
-    "gemelos": '<rect x="82" y="312" width="14" height="70" rx="7"/><rect x="104" y="312" width="14" height="70" rx="7"/>'
+    "dorsal": '<path d="M100 112 Q84 108 68 100 Q58 136 70 176 Q88 186 100 172Z"/>',
+    "espalda-media": '<path d="M100 112 Q90 116 88 136 Q88 160 94 172 Q98 174 100 172Z"/>',
+    "lumbar": '<path d="M100 176 Q92 182 92 200 Q96 208 100 206Z"/>',
+    "hombro-atras": '<path d="M70 84 Q54 88 50 108 Q54 126 64 128 Q72 108 70 84Z"/>',
+    "triceps": '<path d="M52 134 Q44 156 42 178 Q48 186 56 180 Q62 156 64 136Z"/>',
+    "gluteos": '<path d="M70 212 Q90 200 100 214 Q102 240 92 250 Q74 250 68 232Z"/>',
+    "isquios": '<path d="M70 254 Q86 244 98 256 L98 322 Q88 332 76 322 Q68 292 70 254Z"/>',
+    "gemelos": '<path d="M76 334 Q90 328 98 340 Q102 370 96 386 Q84 390 78 374 Q74 350 76 334Z"/>'
   }
 };
-const SIL = '<circle cx="100" cy="36" r="22"/><path d="M90 56 L110 56 L112 72 L88 72 Z"/><path d="M74 84 Q100 76 126 84 L142 98 L136 200 L124 246 L76 246 L64 200 L58 98 Z"/><path d="M58 98 L40 186 L50 192 L70 104 Z"/><path d="M142 98 L160 186 L150 192 L130 104 Z"/><path d="M76 246 L99 246 L97 388 L80 388 Z"/><path d="M101 246 L124 246 L120 388 L103 388 Z"/>';
+const CUERPO = '<ellipse cx="100" cy="36" rx="18" ry="22"/><path d="M90 52 L110 52 L112 72 L88 72Z"/>' +
+  '<path d="M100 62 L84 66 Q66 70 56 84 L58 124 Q66 150 74 170 Q76 190 72 206 Q66 230 66 262 L100 262Z"/>' +
+  '<path d="M100 62 L116 66 Q134 70 144 84 L142 124 Q134 150 126 170 Q124 190 128 206 Q134 230 134 262 L100 262Z"/>' +
+  '<path d="M52 82 Q36 96 34 124 Q32 176 34 226 L48 226 Q50 180 56 146 Q64 120 66 96Z"/>' +
+  '<path d="M148 82 Q164 96 166 124 Q168 176 166 226 L152 226 Q150 180 144 146 Q136 120 134 96Z"/>' +
+  '<path d="M66 262 L99 262 L98 396 L72 396 Q68 330 66 262Z"/>' +
+  '<path d="M101 262 L134 262 Q132 330 128 396 L102 396Z"/>';
 const INTENS = { Suave: 3.5, Moderada: 5, Intensa: 6 };
 const MET_ISO = 3.8;
 const PERFIL0 = { peso: 112, altura: 186, edad: 31 };
@@ -321,11 +327,19 @@ const zonasDeGrupo = g => Object.keys(ZONAS).filter(k => ZONAS[k].g === g);
 const vistaDefault = g => { const zs = zonasDeGrupo(g); return zs.length ? ZONAS[zs[0]].v : "frente"; };
 const vecesHecho = n => S.entries.filter(x => x.nombre.trim().toLowerCase() === n.trim().toLowerCase()).length;
 function figura(g, z) {
-  const partes = Object.entries(MAPA[ui.vista]).map(([k, frag]) => {
-    if (ZONAS[k].g !== g) return `<g class="zona-no">${frag}</g>`;
-    return `<g class="zona ${z === k ? "on" : ""}" data-act="zona" data-z="${k}" role="button" aria-label="${esc(ZONAS[k].n)}">${frag}</g>`;
+  const espejo = f => `<g transform="matrix(-1 0 0 1 200 0)">${f}</g>`;
+  const zonas = Object.entries(MAPA[ui.vista]).map(([k, frag]) => {
+    const enG = ZONAS[k].g === g, activa = z === k;
+    const cls = !enG ? "zona-no" : activa ? "zona on" : "zona";
+    const attrs = enG ? ` data-act="zona" data-z="${k}" role="button" aria-label="${esc(ZONAS[k].n)}"` : "";
+    return `<g class="${cls}"${attrs}>${frag}${espejo(frag)}</g>`;
   }).join("");
-  return `<svg viewBox="0 0 200 400" role="img" aria-label="Dibujo del cuerpo, vista ${ui.vista}"><g class="sil">${SIL.split("/>").map(x => x ? x + "/>" : "").join("")}</g>${partes}</svg>`;
+  return `<svg viewBox="0 0 200 410" role="img" aria-label="Dibujo del cuerpo, vista ${ui.vista}">
+    <defs>
+      <linearGradient id="gcuerpo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eceef2"/><stop offset="1" stop-color="#b9bfc8"/></linearGradient>
+      <linearGradient id="gnaranja" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a5c"/><stop offset="1" stop-color="#e8500f"/></linearGradient>
+    </defs>
+    <g class="cuerpo">${CUERPO}</g>${zonas}</svg>`;
 }
 function tarjetaGuia(e, g) {
   const veces = vecesHecho(e.n);
