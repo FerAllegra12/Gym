@@ -82,13 +82,14 @@ h2{font-size:17px;font-weight:650;margin:0}
 .guia{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .mapa-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mapa-head .seg{margin:0;width:170px;flex:none}
-.figura svg{display:block;width:min(230px,70vw);height:auto;margin:8px auto 0}
+.figura svg{display:block;width:min(260px,72vw);height:auto;margin:8px auto 0;border-radius:12px}
 .zona{cursor:pointer}
-.zona-no{pointer-events:none}
-.cuerpo *{fill:url(#gcuerpo);stroke:#7f8691;stroke-width:1}
+.zona polygon{fill:#ff7a2e;fill-opacity:.55;stroke:#ff5a10;stroke-width:1.5;mix-blend-mode:multiply}
+.zona.on polygon{fill:#ff5a10;fill-opacity:.8}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;color:inherit;cursor:pointer}
+.chip.on{background:#ff6a1f;border-color:#ff6a1f;color:#fff}
 .zona-no *{fill:#e4e7eb;stroke:#9aa0a9;stroke-width:.8}
-.zona *{fill:#ffb48a;fill-opacity:.6;stroke:#ff6a1f;stroke-width:1.2;stroke-dasharray:3 2}
-.zona.on *{fill:url(#gnaranja);fill-opacity:1;stroke:#c24509;stroke-width:1;stroke-dasharray:none}
 .aclar{font-size:13px;color:var(--mute);text-align:center;margin:8px 0 0}
 .centro{text-align:center;margin-top:4px}
 .ejx{padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:8px}
@@ -127,89 +128,153 @@ const K2 = "registroGym.v2";
 const GRUPOS = ["Pecho","Espalda","Hombros","Bíceps","Tríceps","Piernas","Abdominales"];
 const GRUPO_VIEJO = { "Cuádriceps": "Piernas", "Glúteos": "Piernas" };
 const normG = g => GRUPO_VIEJO[g] || g;
+const EQ_ORDEN = ["Barra", "Mancuernas", "Máquina", "Polea", "Peso corporal"];
 const ZONAS = {
   "pecho-arriba": { g: "Pecho", v: "frente", n: "Pecho de arriba", ej: [
-    { n: "Press inclinado con mancuernas", a: "hombros y tríceps", s: ["Recostate en un banco inclinado, a unos 30 o 45 grados.", "Bajá las mancuernas a la altura del pecho y empujá hacia arriba."] },
-    { n: "Aperturas inclinadas con mancuernas", a: "hombros", s: ["Brazos con un poco de flexión, abrí en arco hasta sentir el estiramiento.", "Volvé cerrando el arco despacio."] } ] },
+    { n: "Press inclinado con mancuernas", eq: "Mancuernas", a: "tríceps y hombro", s: ["Recostate en un banco inclinado, a 30 o 45 grados.", "Bajá las mancuernas a la altura del pecho y empujá hacia arriba."] },
+    { n: "Press inclinado con barra", eq: "Barra", a: "tríceps y hombro", s: ["Banco inclinado, agarre un poco más ancho que los hombros.", "Bajá la barra a la parte alta del pecho y empujá hasta estirar."] },
+    { n: "Press inclinado en máquina", eq: "Máquina", a: "tríceps", s: ["Sentado con el pecho apoyado, agarrá las manijas a la altura del pecho.", "Empujá hacia adelante sin trabar los codos."] },
+    { n: "Aperturas inclinadas con mancuernas", eq: "Mancuernas", a: "hombro anterior", s: ["Brazos con un poco de flexión, abrí en arco hasta sentir el estiramiento.", "Volvé cerrando el arco despacio."] },
+    { n: "Cruces en polea alta", eq: "Polea", a: "pecho medio", s: ["Poleas altas, un paso adelante, brazos en arco.", "Llevá las manos al frente y abajo juntándolas."] }
+  ] },
   "pecho-medio": { g: "Pecho", v: "frente", n: "Pecho del medio", ej: [
-    { n: "Press banca con barra", a: "tríceps y hombros", s: ["Acostado en banco plano, agarre un poco más ancho que los hombros.", "Bajá la barra al pecho y empujá hasta estirar los brazos."] },
-    { n: "Press banca con mancuernas", a: "tríceps", s: ["Mancuernas a la altura del pecho, codos a unos 45 grados.", "Empujá hacia arriba y bajá lento."] } ] },
+    { n: "Press banca con barra", eq: "Barra", a: "tríceps y hombro", s: ["Acostado en banco plano, agarre un poco más ancho que los hombros.", "Bajá la barra al pecho y empujá hasta estirar los brazos."] },
+    { n: "Press banca con mancuernas", eq: "Mancuernas", a: "tríceps", s: ["Mancuernas a la altura del pecho, codos a unos 45 grados.", "Empujá hacia arriba y bajá lento."] },
+    { n: "Press pecho en máquina", eq: "Máquina", a: "tríceps", s: ["Sentado con la espalda apoyada, manijas a la altura del pecho.", "Empujá hacia adelante y volvé despacio."] },
+    { n: "Aperturas con mancuernas", eq: "Mancuernas", a: "hombro anterior", s: ["Acostado, brazos casi estirados, abrí en arco.", "Cerrá como si abrazaras un árbol."] },
+    { n: "Cruces en polea", eq: "Polea", a: "hombro anterior", s: ["Poleas a la altura del pecho, un paso adelante.", "Juntá las manos delante del pecho."] },
+    { n: "Flexiones de brazos", eq: "Peso corporal", a: "tríceps y hombros", s: ["Manos un poco más anchas que los hombros, cuerpo recto.", "Bajá el pecho casi al piso y empujá."] }
+  ] },
   "pecho-abajo": { g: "Pecho", v: "frente", n: "Pecho de abajo", ej: [
-    { n: "Fondos en paralelas", a: "tríceps y hombros", s: ["Sostenete en las barras con el cuerpo levemente inclinado hacia adelante.", "Bajá hasta sentir estiramiento en el pecho y subí."] },
-    { n: "Press declinado con mancuernas", a: "tríceps", s: ["Banco con la cabeza más abajo que los pies.", "Empujá las mancuernas hacia arriba desde la parte baja del pecho."] } ] },
+    { n: "Fondos en paralelas", eq: "Peso corporal", a: "tríceps y hombros", s: ["Sostenete en las barras con el cuerpo levemente inclinado hacia adelante.", "Bajá hasta sentir estiramiento en el pecho y subí."] },
+    { n: "Press declinado con mancuernas", eq: "Mancuernas", a: "tríceps", s: ["Banco con la cabeza más abajo que los pies.", "Empujá las mancuernas hacia arriba desde la parte baja del pecho."] },
+    { n: "Press declinado con barra", eq: "Barra", a: "tríceps", s: ["Banco declinado, agarre un poco más ancho que los hombros.", "Bajá la barra a la parte baja del pecho y empujá."] },
+    { n: "Press declinado en máquina", eq: "Máquina", a: "tríceps", s: ["Sentado en la máquina con las manijas bajas.", "Empujá hacia adelante y arriba."] },
+    { n: "Cruces en polea baja", eq: "Polea", a: "pecho medio", s: ["Poleas bajas, un paso adelante.", "Subí las manos hacia el pecho en arco."] }
+  ] },
   "hombro-adelante": { g: "Hombros", v: "frente", n: "Hombro de adelante", ej: [
-    { n: "Press militar con mancuernas", a: "tríceps y pecho de arriba", s: ["Sentado con respaldo, mancuernas a la altura de los hombros.", "Empujá hacia arriba sin arquear la espalda."] },
-    { n: "Press militar con barra", a: "tríceps", s: ["De pie o sentado, barra apoyada en la clavícula.", "Empujá hacia arriba y bajá controlando."] } ] },
+    { n: "Press militar con mancuernas", eq: "Mancuernas", a: "tríceps y pecho de arriba", s: ["Sentado con respaldo, mancuernas a la altura de los hombros.", "Empujá hacia arriba sin arquear la espalda."] },
+    { n: "Press militar con barra", eq: "Barra", a: "tríceps", s: ["De pie o sentado, barra apoyada en la clavícula.", "Empujá hacia arriba y bajá controlando."] },
+    { n: "Press de hombros en máquina", eq: "Máquina", a: "tríceps", s: ["Sentado con la espalda apoyada, agarres a la altura del hombro.", "Empujá hacia arriba sin trabar los codos."] },
+    { n: "Press Arnold", eq: "Mancuernas", a: "tríceps", s: ["Mancuernas frente a la cara con palmas hacia vos.", "Al subir girá las palmas hacia afuera."] },
+    { n: "Flexiones en pica", eq: "Peso corporal", a: "tríceps", s: ["Cuerpo en V invertida, manos en el piso.", "Bajá la cabeza hacia el piso y empujá."] }
+  ] },
   "hombro-costado": { g: "Hombros", v: "frente", n: "Hombro de costado", ej: [
-    { n: "Elevaciones laterales con mancuernas", a: "trapecio", s: ["De pie, mancuernas a los costados, codos apenas doblados.", "Subí hasta la altura de los hombros y bajá despacio."] },
-    { n: "Elevaciones laterales en polea", a: "trapecio", s: ["Polea baja, agarrá el cable con la mano del lado opuesto.", "Subí el brazo hasta la altura del hombro."] } ] },
+    { n: "Elevaciones laterales con mancuernas", eq: "Mancuernas", a: "trapecio", s: ["De pie, mancuernas a los costados, codos apenas doblados.", "Subí hasta la altura de los hombros y bajá despacio."] },
+    { n: "Elevaciones laterales en polea", eq: "Polea", a: "trapecio", s: ["Polea baja, agarrá el cable con la mano del lado opuesto.", "Subí el brazo hasta la altura del hombro."] },
+    { n: "Elevaciones laterales en máquina", eq: "Máquina", a: "trapecio", s: ["Sentado, codos apoyados en las almohadillas.", "Subí los brazos hacia los costados y bajá lento."] },
+    { n: "Remo al mentón con barra", eq: "Barra", a: "trapecio y bíceps", s: ["De pie, barra con agarre estrecho frente a los muslos.", "Subí la barra por delante del cuerpo con los codos altos."] },
+    { n: "Remo al mentón en polea", eq: "Polea", a: "trapecio", s: ["Polea baja, agarre con las dos manos.", "Subí con los codos altos hasta la altura del pecho."] }
+  ] },
   "hombro-atras": { g: "Hombros", v: "espalda", n: "Hombro de atrás", ej: [
-    { n: "Pájaros con mancuernas", a: "espalda media", s: ["Inclinado hacia adelante, mancuernas colgando.", "Abrí los brazos a los costados con codos levemente doblados."] },
-    { n: "Face pull en polea", a: "espalda media", s: ["Polea a la altura de la cara, con cuerda.", "Tirá hacia la cara separando las manos y apretando atrás."] } ] },
+    { n: "Pájaros con mancuernas", eq: "Mancuernas", a: "espalda media", s: ["Inclinado hacia adelante, mancuernas colgando.", "Abrí los brazos a los costados con codos levemente doblados."] },
+    { n: "Face pull en polea", eq: "Polea", a: "espalda media", s: ["Polea a la altura de la cara, con cuerda.", "Tirá hacia la cara separando las manos y apretando atrás."] },
+    { n: "Pájaros en máquina", eq: "Máquina", a: "espalda media", s: ["Sentado con el pecho apoyado en la máquina.", "Abrí los brazos hacia atrás y volvé despacio."] },
+    { n: "Pájaros en polea cruzada", eq: "Polea", a: "espalda media", s: ["Poleas altas cruzadas, brazos casi estirados.", "Abrí hacia los costados con el brazo en arco."] },
+    { n: "Pájaros boca abajo en banco inclinado", eq: "Mancuernas", a: "espalda media", s: ["Acostado boca abajo en banco inclinado, mancuernas colgando.", "Abrí los brazos en arco hacia los costados."] }
+  ] },
   "biceps": { g: "Bíceps", v: "frente", n: "Bíceps", ej: [
-    { n: "Curl con barra", a: "antebrazo", s: ["De pie, barra con agarre a la altura de los muslos.", "Subí hasta los hombros sin mover los codos."] },
-    { n: "Curl martillo", a: "antebrazo", s: ["Mancuernas con las palmas mirando al cuerpo.", "Subí sin girar la muñeca."] } ] },
+    { n: "Curl con barra", eq: "Barra", a: "antebrazo", s: ["De pie, barra con agarre a la altura de los muslos.", "Subí hasta los hombros sin mover los codos."] },
+    { n: "Curl martillo", eq: "Mancuernas", a: "antebrazo", s: ["Mancuernas con las palmas mirando al cuerpo.", "Subí sin girar la muñeca."] },
+    { n: "Curl con mancuernas alterno", eq: "Mancuernas", a: "antebrazo", s: ["De pie, mancuerna en cada mano, palmas hacia adelante.", "Subí una mano girando la muñeca y bajá; alterná."] },
+    { n: "Curl predicador con barra Z", eq: "Barra", a: "antebrazo", s: ["Brazos apoyados sobre el banco predicador.", "Subí la barra sin levantar los codos."] },
+    { n: "Curl en polea baja", eq: "Polea", a: "antebrazo", s: ["De pie de espaldas a la polea baja, barra o manija.", "Subí sin mover los codos y bajá lento."] },
+    { n: "Curl en máquina", eq: "Máquina", a: "antebrazo", s: ["Sentado, brazos apoyados en la almohadilla.", "Subí y bajá controlando."] }
+  ] },
   "triceps": { g: "Tríceps", v: "espalda", n: "Tríceps", ej: [
-    { n: "Extensión de tríceps en polea con soga", a: "", s: ["De pie frente a la polea alta, codos pegados al cuerpo.", "Empujá hacia abajo hasta estirar los brazos."] },
-    { n: "Fondos entre bancos", a: "pecho y hombros", s: ["Manos en un banco detrás tuyo, piernas estiradas.", "Bajá doblando los codos y subí empujando."] } ] },
+    { n: "Extensión de tríceps en polea con soga", eq: "Polea", a: "", s: ["De pie frente a la polea alta, codos pegados al cuerpo.", "Empujá hacia abajo hasta estirar los brazos."] },
+    { n: "Press francés con barra Z", eq: "Barra", a: "", s: ["Acostado, barra sobre la frente con codos fijos.", "Bajá la barra hacia la frente y estirá los brazos."] },
+    { n: "Fondos entre bancos", eq: "Peso corporal", a: "pecho y hombros", s: ["Manos en un banco detrás tuyo, piernas estiradas.", "Bajá doblando los codos y subí empujando."] },
+    { n: "Press cerrado con barra", eq: "Barra", a: "pecho", s: ["Acostado, agarre a la anchura de los hombros.", "Bajá la barra al pecho con codos cerca del cuerpo y empujá."] },
+    { n: "Extensión sobre la cabeza con mancuerna", eq: "Mancuernas", a: "", s: ["Sentado, mancuerna sostenida con las dos manos detrás de la cabeza.", "Estirá los brazos hacia arriba y bajá."] },
+    { n: "Extensión de tríceps en máquina", eq: "Máquina", a: "", s: ["Sentado, codos apoyados en la almohadilla.", "Empujá hacia abajo hasta estirar."] }
+  ] },
   "dorsal": { g: "Espalda", v: "espalda", n: "Dorsal (laterales)", ej: [
-    { n: "Jalón al pecho", a: "bíceps", s: ["Sentado, agarre ancho, tirá la barra hacia la parte alta del pecho.", "Llevá los codos hacia abajo y atrás."] },
-    { n: "Remo con barra", a: "bíceps y zona lumbar", s: ["Inclinado unos 45 grados, espalda recta, barra colgando.", "Tirá la barra hacia el abdomen."] } ] },
+    { n: "Jalón al pecho", eq: "Polea", a: "bíceps", s: ["Sentado, agarre ancho, tirá la barra hacia la parte alta del pecho.", "Llevá los codos hacia abajo y atrás."] },
+    { n: "Dominadas", eq: "Peso corporal", a: "bíceps", s: ["Agarre prono, un poco más ancho que los hombros.", "Subí hasta que la barbilla pase la barra y bajá despacio."] },
+    { n: "Remo con barra", eq: "Barra", a: "bíceps y zona lumbar", s: ["Inclinado unos 45 grados, espalda recta, barra colgando.", "Tirá la barra hacia el abdomen."] },
+    { n: "Pullover en polea", eq: "Polea", a: "pecho", s: ["De frente a la polea alta, brazos casi estirados.", "Llevá la barra hacia los muslos en arco."] },
+    { n: "Jalón con agarre neutro", eq: "Máquina", a: "bíceps", s: ["Sentado, agarre neutro en el asa.", "Tirá hacia el pecho con los codos hacia abajo."] },
+    { n: "Remo en T", eq: "Barra", a: "espalda media", s: ["Barra en el suelo sujeta, pie a cada lado.", "Tirá hacia el pecho con la espalda plana."] }
+  ] },
   "espalda-media": { g: "Espalda", v: "espalda", n: "Espalda media (entre omóplatos)", ej: [
-    { n: "Remo en polea baja", a: "bíceps", s: ["Sentado con los pies apoyados, agarre neutro.", "Tirá hacia el abdomen juntando los omóplatos."] },
-    { n: "Remo con mancuerna a un brazo", a: "bíceps", s: ["Una mano y una rodilla apoyadas en el banco, espalda recta.", "Subí la mancuerna hacia la cadera."] } ] },
+    { n: "Remo en polea baja", eq: "Polea", a: "bíceps", s: ["Sentado con los pies apoyados, agarre neutro.", "Tirá hacia el abdomen juntando los omóplatos."] },
+    { n: "Remo con mancuerna a un brazo", eq: "Mancuernas", a: "bíceps", s: ["Una mano y una rodilla apoyadas en el banco, espalda recta.", "Subí la mancuerna hacia la cadera."] },
+    { n: "Remo en máquina con pecho apoyado", eq: "Máquina", a: "bíceps", s: ["Pecho apoyado en la almohadilla, agarres a los costados.", "Tirá hacia atrás juntando los omóplatos."] },
+    { n: "Remo invertido", eq: "Peso corporal", a: "bíceps", s: ["Acostado bajo una barra firme, agarre a la altura del pecho.", "Tirá el pecho hacia la barra manteniendo el cuerpo recto."] },
+    { n: "Remo sentado en polea agarre cerrado", eq: "Polea", a: "bíceps", s: ["Sentado, agarre cerrado en el triángulo.", "Llevá la manija al abdomen y volvé estirando."] }
+  ] },
   "lumbar": { g: "Espalda", v: "espalda", n: "Zona lumbar (parte baja)", ej: [
-    { n: "Hiperextensiones", a: "glúteos e isquiotibiales", s: ["Acostado en el banco, con la cadera en el borde.", "Subí el torso hasta quedar alineado, sin pasar de ahí."] },
-    { n: "Peso muerto", a: "glúteos, isquiotibiales y trapecio", s: ["Barra sobre el empeine, espalda recta.", "Empujá el piso con las piernas y subí la barra pegada al cuerpo."] } ] },
+    { n: "Peso muerto", eq: "Barra", a: "glúteos, isquiotibiales y trapecio", s: ["Barra sobre el empeine, espalda recta.", "Empujá el piso con las piernas y subí la barra pegada al cuerpo."] },
+    { n: "Hiperextensiones", eq: "Peso corporal", a: "glúteos e isquiotibiales", s: ["Acostado en el banco, con la cadera en el borde.", "Subí el torso hasta quedar alineado, sin pasar de ahí."] },
+    { n: "Buenos días", eq: "Barra", a: "isquiotibiales", s: ["Barra sobre los trapecios, rodillas apenas flexionadas.", "Inclinate desde la cadera con la espalda recta y volvé."] },
+    { n: "Hiperextensión en máquina", eq: "Máquina", a: "glúteos", s: ["Apoyá la cadera en el banco de la máquina.", "Subí el torso controlando y bajá."] },
+    { n: "Peso muerto rumano con mancuernas", eq: "Mancuernas", a: "glúteos e isquiotibiales", s: ["Mancuernas al frente, espalda recta.", "Bajá deslizándolas por las piernas y volvé."] }
+  ] },
+  "trapecio": { g: "Espalda", v: "espalda", n: "Trapecio", ej: [
+    { n: "Encogimientos con barra", eq: "Barra", a: "", s: ["De pie, barra en las manos a los costados.", "Subí los hombros hacia las orejas y bajá despacio."] },
+    { n: "Encogimientos con mancuernas", eq: "Mancuernas", a: "", s: ["De pie, mancuernas a los costados.", "Subí los hombros sin doblar los codos."] },
+    { n: "Encogimientos en máquina", eq: "Máquina", a: "", s: ["Sentado o de pie, apoyá los hombros en la almohadilla.", "Subí y bajá controlando."] },
+    { n: "Encogimientos en polea", eq: "Polea", a: "", s: ["Polea baja, agarre con las dos manos.", "Subí los hombros hacia las orejas."] },
+    { n: "Encogimiento a una mano", eq: "Mancuernas", a: "", s: ["Una mano en el banco, mancuerna en la otra.", "Subí el hombro hacia la oreja y bajá."] }
+  ] },
   "abdo-recto": { g: "Abdominales", v: "frente", n: "Abdominal recto (cuadritos)", ej: [
-    { n: "Crunch en el piso", a: "oblicuos", s: ["Acostado con rodillas dobladas, manos detrás de la cabeza sin tirar.", "Subí los hombros despegándolos del piso."] },
-    { n: "Plancha", a: "transverso y glúteos", m: "tiempo", s: ["Apoyá antebrazos y puntas de los pies.", "Mantené el cuerpo recto como una tabla."] } ] },
+    { n: "Crunch en el piso", eq: "Peso corporal", a: "oblicuos", s: ["Acostado con rodillas dobladas, manos detrás de la cabeza sin tirar.", "Subí los hombros despegándolos del piso."] },
+    { n: "Crunch en polea alta", eq: "Polea", a: "", s: ["De rodillas frente a la polea alta, cuerda detrás de la cabeza.", "Bajá la cabeza hacia las rodillas contrayendo el abdomen."] },
+    { n: "Crunch en máquina abdominal", eq: "Máquina", a: "", s: ["Sentado, agarres en la máquina.", "Llevá el pecho hacia las rodillas y volvé."] },
+    { n: "Elevación de piernas colgado", eq: "Peso corporal", a: "flexores de cadera", s: ["Colgado de la barra, cuerpo quieto.", "Subí las piernas sin balancearte."] },
+    { n: "Elevación de piernas en banco", eq: "Peso corporal", a: "flexores de cadera", s: ["Acostado en banco, manos a los costados.", "Subí las piernas hasta la vertical y bajá sin tocar el piso."] },
+    { n: "Plancha", eq: "Peso corporal", a: "transverso y glúteos", m: "tiempo", s: ["Apoyá antebrazos y puntas de los pies.", "Mantené el cuerpo recto como una tabla."] }
+  ] },
   "abdo-oblicuos": { g: "Abdominales", v: "frente", n: "Oblicuos (costados)", ej: [
-    { n: "Crunch oblicuo", a: "abdominal recto", s: ["Acostado, llevá el hombro hacia la rodilla opuesta.", "Subí y bajá despacio."] },
-    { n: "Plancha lateral", a: "cintura", m: "tiempo", s: ["Apoyado sobre un antebrazo, cuerpo en línea recta.", "Mantené la posición."] } ] },
+    { n: "Crunch oblicuo", eq: "Peso corporal", a: "abdominal recto", s: ["Acostado, llevá el hombro hacia la rodilla opuesta.", "Subí y bajá despacio."] },
+    { n: "Giro ruso con mancuerna", eq: "Mancuernas", a: "transverso", s: ["Sentado, pies apoyados, espalda levemente inclinada.", "Girá el torso de un lado al otro."] },
+    { n: "Hachazo en polea", eq: "Polea", a: "abdominal recto", s: ["Polea alta de costado, cuerda con las dos manos.", "Bajá en diagonal hacia la cadera contraria."] },
+    { n: "Plancha lateral", eq: "Peso corporal", a: "cintura", m: "tiempo", s: ["Apoyado sobre un antebrazo, cuerpo en línea recta.", "Mantené la posición."] },
+    { n: "Plancha lateral con elevación de cadera", eq: "Peso corporal", a: "cintura", s: ["Plancha lateral con la cadera en el piso.", "Subí la cadera y bajala sin tocar el piso."] }
+  ] },
   "cuadriceps": { g: "Piernas", v: "frente", n: "Cuádriceps (adelante del muslo)", ej: [
-    { n: "Sentadilla con barra", a: "glúteos e isquiotibiales", s: ["Barra en la espalda alta, pies a la altura de los hombros.", "Bajá como si te sentaras hasta la altura de las rodillas y subí."] },
-    { n: "Extensión de cuádriceps en máquina", a: "", s: ["Sentado, el rodillo sobre los tobillos.", "Estirá las piernas sin trabar las rodillas."] } ] },
+    { n: "Sentadilla con barra", eq: "Barra", a: "glúteos e isquiotibiales", s: ["Barra en la espalda alta, pies a la altura de los hombros.", "Bajá como si te sentaras hasta la altura de las rodillas y subí."] },
+    { n: "Prensa de piernas", eq: "Máquina", a: "glúteos", s: ["Sentado con la espalda apoyada, pies a la altura de los hombros.", "Bajá controlando hasta 90 grados y empujá."] },
+    { n: "Extensión de cuádriceps en máquina", eq: "Máquina", a: "", s: ["Sentado, el rodillo sobre los tobillos.", "Estirá las piernas sin trabar las rodillas."] },
+    { n: "Sentadilla búlgara con mancuernas", eq: "Mancuernas", a: "glúteos", s: ["Pie trasero apoyado en un banco, mancuernas a los costados.", "Bajá hasta que la rodilla casi toque el piso y subí."] },
+    { n: "Sentadilla goblet", eq: "Mancuernas", a: "glúteos", s: ["Mancuerna pegada al pecho, pies un poco más anchos que los hombros.", "Bajá manteniendo el torso erguido y subí."] },
+    { n: "Zancadas con mancuernas", eq: "Mancuernas", a: "glúteos", s: ["Mancuernas a los costados, paso largo hacia adelante.", "Bajá la rodilla trasera casi al piso y volvé."] },
+    { n: "Sentadilla libre", eq: "Peso corporal", a: "glúteos", s: ["Pies a la altura de los hombros, brazos adelante.", "Bajá como si te sentaras y subí."] }
+  ] },
+  "aductores": { g: "Piernas", v: "frente", n: "Aductores (parte interna del muslo)", ej: [
+    { n: "Aductores en máquina", eq: "Máquina", a: "", s: ["Sentado con las almohadillas en la parte interna de las rodillas.", "Juntá las piernas despacio y volvé."] },
+    { n: "Sentadilla sumo con barra", eq: "Barra", a: "glúteos", s: ["Pies más abiertos que los hombros, puntas hacia afuera.", "Bajá empujando las rodillas hacia afuera y subí."] },
+    { n: "Sentadilla sumo con mancuerna", eq: "Mancuernas", a: "glúteos", s: ["Una mancuerna entre las piernas, pies abiertos.", "Bajá controlando y subí."] },
+    { n: "Aducción en polea", eq: "Polea", a: "", s: ["De costado a la polea baja, tobillera en la pierna de adentro.", "Cruzá la pierna por delante sin mover el torso."] },
+    { n: "Sentadilla sumo libre", eq: "Peso corporal", a: "glúteos", s: ["Pies abiertos, puntas hacia afuera.", "Bajá y subí manteniendo el torso erguido."] }
+  ] },
   "isquios": { g: "Piernas", v: "espalda", n: "Isquiotibiales (atrás del muslo)", ej: [
-    { n: "Peso muerto rumano", a: "glúteos y zona lumbar", s: ["Barra en las manos, rodillas apenas flexionadas.", "Bajá la barra por delante de las piernas con la espalda recta."] },
-    { n: "Curl femoral acostado", a: "gemelos", s: ["Acostado boca abajo en la máquina.", "Doblá las rodillas llevando el talón hacia el glúteo."] } ] },
+    { n: "Peso muerto rumano", eq: "Barra", a: "glúteos y zona lumbar", s: ["Barra en las manos, rodillas apenas flexionadas.", "Bajá la barra por delante de las piernas con la espalda recta."] },
+    { n: "Curl femoral acostado", eq: "Máquina", a: "gemelos", s: ["Acostado boca abajo en la máquina.", "Doblá las rodillas llevando el talón hacia el glúteo."] },
+    { n: "Curl femoral sentado", eq: "Máquina", a: "", s: ["Sentado, almohadilla sobre los tobillos.", "Doblá las rodillas y volvé despacio."] },
+    { n: "Peso muerto rumano con mancuernas", eq: "Mancuernas", a: "glúteos", s: ["Mancuernas en las manos, rodillas apenas flexionadas.", "Bajá deslizándolas por las piernas con la espalda recta."] },
+    { n: "Curl nórdico", eq: "Peso corporal", a: "", s: ["Rodillas fijas en el piso con los tobillos sujetos.", "Bajá el torso lo más lento que puedas y frená con las manos."] },
+    { n: "Curl femoral de pie en polea", eq: "Polea", a: "", s: ["Tobillera en el pie, de frente a la polea.", "Doblá la rodilla llevando el talón hacia atrás."] }
+  ] },
   "gluteos": { g: "Piernas", v: "espalda", n: "Glúteos", ej: [
-    { n: "Hip thrust", a: "isquiotibiales", s: ["Espalda apoyada en un banco, barra sobre la cadera con una almohadilla.", "Empujá la cadera hacia arriba apretando los glúteos."] },
-    { n: "Patada de glúteo en polea", a: "isquiotibiales", s: ["Polea baja con tobillera.", "Llevá la pierna hacia atrás sin arquear la espalda."] } ] },
+    { n: "Hip thrust", eq: "Barra", a: "isquiotibiales", s: ["Espalda apoyada en un banco, barra sobre la cadera con una almohadilla.", "Empujá la cadera hacia arriba apretando los glúteos."] },
+    { n: "Patada de glúteo en polea", eq: "Polea", a: "isquiotibiales", s: ["Polea baja con tobillera.", "Llevá la pierna hacia atrás sin arquear la espalda."] },
+    { n: "Puente de glúteo con mancuerna", eq: "Mancuernas", a: "isquiotibiales", s: ["Acostado, mancuerna sobre la cadera, rodillas dobladas.", "Empujá la cadera hacia arriba y bajá despacio."] },
+    { n: "Abducción en máquina", eq: "Máquina", a: "glúteo medio", s: ["Sentado en la máquina, almohadillas en la cara externa de las rodillas.", "Abrí las piernas y volvé controlando."] },
+    { n: "Puente de glúteo", eq: "Peso corporal", a: "isquiotibiales", s: ["Acostado, rodillas dobladas, pies apoyados.", "Subí la cadera apretando glúteos y bajá."] },
+    { n: "Patada de glúteo en cuadrupedia", eq: "Peso corporal", a: "isquiotibiales", s: ["En cuatro apoyos, espalda neutra.", "Llevá el talón hacia el techo sin arquear la espalda."] }
+  ] },
   "gemelos": { g: "Piernas", v: "espalda", n: "Gemelos (pantorrilla)", ej: [
-    { n: "Elevación de talones de pie", a: "", s: ["De pie, con la punta de los pies sobre un escalón.", "Subí sobre las puntas y bajá despacio."] },
-    { n: "Elevación de talones sentado", a: "", s: ["Sentado, con peso sobre las rodillas.", "Subí sobre las puntas y bajá lento."] } ] }
+    { n: "Elevación de talones de pie", eq: "Peso corporal", a: "", s: ["De pie, con la punta de los pies sobre un escalón.", "Subí sobre las puntas y bajá despacio."] },
+    { n: "Elevación de talones de pie con barra", eq: "Barra", a: "", s: ["Barra sobre los trapecios, punta de los pies sobre un escalón.", "Subí sobre las puntas y bajá lento."] },
+    { n: "Elevación de talones en máquina", eq: "Máquina", a: "", s: ["Hombros bajo las almohadillas, puntas sobre el borde.", "Subí y bajá estirando bien el talón."] },
+    { n: "Elevación de talones con mancuerna", eq: "Mancuernas", a: "", s: ["Mancuerna en una mano, de pie junto a un apoyo.", "Subí sobre las puntas y bajá."] },
+    { n: "Elevación de talones sentado", eq: "Máquina", a: "", s: ["Sentado, con peso sobre las rodillas.", "Subí sobre las puntas y bajá lento."] },
+    { n: "Elevación de talones en prensa", eq: "Máquina", a: "", s: ["Sentado en la prensa, punta de los pies sobre el borde.", "Empujá con las puntas y bajá estirando."] }
+  ] }
 };
-const MAPA = {
-  frente: {
-    "pecho-arriba": '<path d="M100 98 Q84 88 66 96 Q60 108 70 118 Q88 122 100 116Z"/>',
-    "pecho-medio": '<path d="M100 118 Q86 118 74 124 Q70 136 80 144 Q94 146 100 138Z"/>',
-    "pecho-abajo": '<path d="M100 140 Q88 146 80 150 Q84 160 100 158Z"/>',
-    "hombro-adelante": '<path d="M74 84 Q56 84 52 102 Q52 124 62 132 Q72 122 74 104Z"/>',
-    "hombro-costado": '<path d="M56 84 Q40 92 38 112 Q40 128 50 132 Q52 110 56 96Z"/>',
-    "biceps": '<path d="M52 134 Q44 150 42 172 Q46 182 56 178 Q62 156 64 136Z"/>',
-    "abdo-recto": '<path d="M88 166 Q96 162 100 166 L100 226 Q94 230 88 226Z"/>',
-    "abdo-oblicuos": '<path d="M72 170 Q80 166 86 170 Q88 196 86 226 Q76 222 70 210 Q68 190 72 170Z"/>',
-    "cuadriceps": '<path d="M70 262 Q84 252 98 262 L98 336 Q90 348 78 340 Q70 306 70 262Z"/>'
-  },
-  espalda: {
-    "dorsal": '<path d="M100 112 Q84 108 68 100 Q58 136 70 176 Q88 186 100 172Z"/>',
-    "espalda-media": '<path d="M100 112 Q90 116 88 136 Q88 160 94 172 Q98 174 100 172Z"/>',
-    "lumbar": '<path d="M100 176 Q92 182 92 200 Q96 208 100 206Z"/>',
-    "hombro-atras": '<path d="M70 84 Q54 88 50 108 Q54 126 64 128 Q72 108 70 84Z"/>',
-    "triceps": '<path d="M52 134 Q44 156 42 178 Q48 186 56 180 Q62 156 64 136Z"/>',
-    "gluteos": '<path d="M70 212 Q90 200 100 214 Q102 240 92 250 Q74 250 68 232Z"/>',
-    "isquios": '<path d="M70 254 Q86 244 98 256 L98 322 Q88 332 76 322 Q68 292 70 254Z"/>',
-    "gemelos": '<path d="M76 334 Q90 328 98 340 Q102 370 96 386 Q84 390 78 374 Q74 350 76 334Z"/>'
-  }
-};
-const CUERPO = '<ellipse cx="100" cy="36" rx="18" ry="22"/><path d="M90 52 L110 52 L112 72 L88 72Z"/>' +
-  '<path d="M100 62 L84 66 Q66 70 56 84 L58 124 Q66 150 74 170 Q76 190 72 206 Q66 230 66 262 L100 262Z"/>' +
-  '<path d="M100 62 L116 66 Q134 70 144 84 L142 124 Q134 150 126 170 Q124 190 128 206 Q134 230 134 262 L100 262Z"/>' +
-  '<path d="M52 82 Q36 96 34 124 Q32 176 34 226 L48 226 Q50 180 56 146 Q64 120 66 96Z"/>' +
-  '<path d="M148 82 Q164 96 166 124 Q168 176 166 226 L152 226 Q150 180 144 146 Q136 120 134 96Z"/>' +
-  '<path d="M66 262 L99 262 L98 396 L72 396 Q68 330 66 262Z"/>' +
-  '<path d="M101 262 L134 262 Q132 330 128 396 L102 396Z"/>';
+const MAPA = {"frente": {"pecho-arriba": ["188,42 150,33 125,45 120,68 155,74 188,70"], "pecho-medio": ["188,72 156,76 128,76 126,96 142,110 188,108"], "pecho-abajo": ["188,110 142,112 130,130 145,142 188,138"], "hombro-adelante": ["120,38 102,42 92,66 98,92 118,90 125,66"], "hombro-costado": ["102,42 88,48 80,70 82,96 94,102 98,92 92,66"], "biceps": ["94,88 116,90 112,132 96,168 78,172 82,132"], "abdo-recto": ["162,132 191,132 191,200 192,212 162,200"], "abdo-oblicuos": ["142,136 160,132 162,200 150,208 136,192 134,160"], "cuadriceps": ["120,288 160,282 168,322 166,370 150,402 130,382 120,340"], "aductores": ["180,242 191,242 191,370 184,390 176,340"]}, "espalda": {"trapecio": ["920,-12 890,10 870,30 878,48 912,30 920,20"], "espalda-media": ["918,46 894,60 896,96 916,132 920,120"], "dorsal": ["866,90 892,66 918,60 918,132 916,170 900,200 870,196 856,160 856,122"], "lumbar": ["920,138 904,146 906,188 920,196"], "hombro-atras": ["860,42 836,46 828,70 836,92 856,96 866,76"], "triceps": ["832,90 820,106 800,154 788,196 796,210 816,200 824,160 840,120"], "gluteos": ["918,204 880,204 860,222 862,262 882,282 918,280"], "isquios": ["918,290 878,294 860,320 856,370 866,400 902,402 918,370"], "gemelos": ["914,410 890,412 870,438 868,482 878,510 906,506 918,470"]}};
 const INTENS = { Suave: 3.5, Moderada: 5, Intensa: 6 };
 const MET_ISO = 3.8;
 const PERFIL0 = { peso: 112, altura: 186, edad: 31 };
@@ -239,7 +304,7 @@ const sinId = s => { const { id, ...resto } = s; return resto; };
 /* ---------- estado ---------- */
 let UID = null, LISTO = false, unsubs = [];
 let S = { perfil: { ...PERFIL0 }, entries: [] };
-const ui = { tab: "hoy", fecha: hoy(), edit: null, f: null, confirm: null, rango: "semana", toastT: 0, vista: "frente", zona: null, pasosKey: null };
+const ui = { tab: "hoy", fecha: hoy(), edit: null, f: null, confirm: null, rango: "semana", toastT: 0, vista: "frente", zona: null, eq: "Todos", pasosKey: null };
 function freshForm(extra) {
   return { grupo: null, nombre: "", modo: "reps", intens: "Moderada", series: [{ v: "10", kg: "0" }, { v: "10", kg: "0" }, { v: "10", kg: "0" }], ...(extra || {}) };
 }
@@ -326,27 +391,23 @@ const maxKg = e => Math.max(0, ...e.series.map(s => s.kg));
 const zonasDeGrupo = g => Object.keys(ZONAS).filter(k => ZONAS[k].g === g);
 const vistaDefault = g => { const zs = zonasDeGrupo(g); return zs.length ? ZONAS[zs[0]].v : "frente"; };
 const vecesHecho = n => S.entries.filter(x => x.nombre.trim().toLowerCase() === n.trim().toLowerCase()).length;
+const vistaVB = { frente: [0, 0, 390, 630], espalda: [730, 0, 390, 630] };
+const EJE = { frente: 384, espalda: 1840 };
 function figura(g, z) {
-  const espejo = f => `<g transform="matrix(-1 0 0 1 200 0)">${f}</g>`;
-  const zonas = Object.entries(MAPA[ui.vista]).map(([k, frag]) => {
-    const enG = ZONAS[k].g === g, activa = z === k;
-    const cls = !enG ? "zona-no" : activa ? "zona on" : "zona";
-    const attrs = enG ? ` data-act="zona" data-z="${k}" role="button" aria-label="${esc(ZONAS[k].n)}"` : "";
-    return `<g class="${cls}"${attrs}>${frag}${espejo(frag)}</g>`;
+  const vb = vistaVB[ui.vista];
+  const zonas = Object.entries(MAPA[ui.vista]).filter(([k]) => ZONAS[k].g === g).map(([k, pts]) => {
+    const cls = z === k ? "zona on" : "zona";
+    const poly = pts.map(p => `<polygon points="${p}"/>`).join("");
+    return `<g class="${cls}" data-act="zona" data-z="${k}" role="button" aria-label="${esc(ZONAS[k].n)}">${poly}<g transform="matrix(-1 0 0 1 ${EJE[ui.vista]} 0)">${poly}</g></g>`;
   }).join("");
-  return `<svg viewBox="0 0 200 410" role="img" aria-label="Dibujo del cuerpo, vista ${ui.vista}">
-    <defs>
-      <linearGradient id="gcuerpo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eceef2"/><stop offset="1" stop-color="#b9bfc8"/></linearGradient>
-      <linearGradient id="gnaranja" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a5c"/><stop offset="1" stop-color="#e8500f"/></linearGradient>
-    </defs>
-    <g class="cuerpo">${CUERPO}</g>${zonas}</svg>`;
+  return `<svg viewBox="${vb.join(" ")}" role="img" aria-label="Cuerpo, vista ${ui.vista}"><image href="img/cuerpo.jpg" x="0" y="0" width="1120" height="630"/>${zonas}</svg>`;
 }
 function tarjetaGuia(e, g) {
   const veces = vecesHecho(e.n);
   const abierto = ui.pasosKey === e.n;
   return `<div class="ejx">
     <strong>${esc(e.n)}</strong>
-    <p class="mini">Trabaja: ${esc(e.zn)}${e.a ? " · También ayuda: " + esc(e.a) : ""}</p>
+    <p class="mini">${esc(e.eq)} · ${esc(e.zn)}${e.a ? " · También: " + esc(e.a) : ""}</p>
     ${veces ? `<p class="mini ok">Ya lo hiciste ${veces} ${veces === 1 ? "vez" : "veces"}</p>` : ""}
     ${abierto ? `<ol class="pasos">${e.s.map(p => `<li>${esc(p)}</li>`).join("")}</ol>` : ""}
     <div class="row">
@@ -357,18 +418,20 @@ function tarjetaGuia(e, g) {
 }
 function vGuia(g) {
   const z = ui.zona && ZONAS[ui.zona] && ZONAS[ui.zona].g === g ? ui.zona : null;
-  const ejs = (z ? [z] : zonasDeGrupo(g))
-    .flatMap(k => ZONAS[k].ej.map(e => ({ ...e, zk: k, zn: ZONAS[k].n })));
-  ejs.sort((a, b) => vecesHecho(b.n) - vecesHecho(a.n));
+  const base = (z ? [z] : zonasDeGrupo(g)).flatMap(k => ZONAS[k].ej.map(e => ({ ...e, zk: k, zn: ZONAS[k].n })));
+  const eqs = EQ_ORDEN.filter(q => base.some(e => e.eq === q));
+  if (ui.eq !== "Todos" && !eqs.includes(ui.eq)) ui.eq = "Todos";
+  const ejs = (ui.eq === "Todos" ? base : base.filter(e => e.eq === ui.eq))
+    .sort((a, b) => vecesHecho(b.n) - vecesHecho(a.n));
   return `<div class="guia">
     <div class="mapa-head">
-      <p class="mini">Zonas de ${esc(g)}</p>
+      <p class="mini">${esc(g)}</p>
       ${seg("vista", "vista", [["frente", "Frente"], ["espalda", "Espalda"]], ui.vista)}
     </div>
     <div class="figura">${figura(g, z)}</div>
-    <p class="aclar">${z ? `Zona marcada: <strong>${esc(ZONAS[z].n)}</strong>` : "Tocá una zona marcada en el dibujo para ver sus ejercicios."}</p>
     ${z ? `<div class="centro"><button class="link" data-act="verTodos">Ver todos los ejercicios de ${esc(g)}</button></div>` : ""}
-    <p class="mini" style="margin:14px 4px 0">${z ? "Ejercicios de esta zona" : "Todos los ejercicios de " + esc(g)}</p>
+    ${eqs.length > 1 ? `<div class="chips">${["Todos", ...eqs].map(q => `<button class="chip${ui.eq === q ? " on" : ""}" data-act="eq" data-v="${q}">${q}</button>`).join("")}</div>` : ""}
+    <p class="mini" style="margin:14px 4px 0">${z ? esc(ZONAS[z].n) : "Todos los ejercicios de " + esc(g)}</p>
     ${ejs.map(e => tarjetaGuia(e, g)).join("")}
   </div>`;
 }
@@ -591,7 +654,7 @@ function usarEj(n) {
   const [zk, z] = par;
   const e = z.ej.find(x => x.n === n);
   ui.f.grupo = z.g; ui.f.nombre = e.n; ui.f.modo = e.m || "reps";
-  ui.zona = zk; ui.pasosKey = null;
+  ui.zona = zk; ui.vista = z.v; ui.eq = "Todos"; ui.pasosKey = null;
   render();
   requestAnimationFrame(() => { const el = document.getElementById("nombre"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); });
   toast("Listo: completá peso y series");
@@ -647,9 +710,10 @@ app.addEventListener("click", e => {
     case "entrar": entrar(); return;
     case "salir": signOut(auth); return;
     case "grupo": ui.f.grupo = b.dataset.v; ui.zona = null; ui.pasosKey = null; ui.vista = vistaDefault(b.dataset.v); break;
-    case "vista": ui.vista = b.dataset.v; ui.zona = null; break;
-    case "zona": { const z = b.dataset.z; ui.zona = ui.zona === z ? null : z; ui.pasosKey = null; break; }
-    case "verTodos": ui.zona = null; break;
+    case "vista": ui.vista = b.dataset.v; ui.zona = null; ui.eq = "Todos"; break;
+    case "eq": ui.eq = b.dataset.v; break;
+    case "zona": { const z = b.dataset.z; ui.zona = ui.zona === z ? null : z; ui.eq = "Todos"; ui.pasosKey = null; break; }
+    case "verTodos": ui.zona = null; ui.eq = "Todos"; break;
     case "pasos": { const n = b.dataset.n; ui.pasosKey = ui.pasosKey === n ? null : n; break; }
     case "usarEj": usarEj(b.dataset.n); return;
     case "set": if (b.dataset.k === "modo") ui.f.modo = b.dataset.v; else ui.f.intens = b.dataset.v; break;
