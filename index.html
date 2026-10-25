@@ -1,0 +1,541 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Registro de Gimnasio</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d4561c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gym">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Una columna pensada para el celular. Barra de pestañas abajo.
+   Paleta: grafito cálido con naranja de esfuerzo como único acento. */
+:root {
+  --bg: #f4f2ee;
+  --fg: #1b1a18;
+  --muted: #6d6862;
+  --surface: #ffffff;
+  --line: #e2ddd5;
+  --accent: #d4561c;
+  --accent-ink: #ffffff;
+  --ok: #2f7d4f;
+  --danger: #b3261e;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131312; --fg: #f2efe9; --muted: #a09a92; --surface: #1d1c1a;
+    --line: #312f2b; --accent: #ef7a45; --accent-ink: #131312;
+    --ok: #5fbf85; --danger: #ff7a70; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131312; --fg: #f2efe9; --muted: #a09a92; --surface: #1d1c1a;
+  --line: #312f2b; --accent: #ef7a45; --accent-ink: #131312;
+  --ok: #5fbf85; --danger: #ff7a70; color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font: 400 15px/1.45 "Instrument Sans", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  padding-block: 14px 110px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: "Bricolage Grotesque", system-ui, sans-serif; margin: 0; text-wrap: balance; }
+h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+h2 { font-size: 20px; font-weight: 800; }
+h3 { font-size: 19px; font-weight: 800; }
+button { font: inherit; color: inherit; cursor: pointer; }
+input { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px; width: 100%; box-sizing: border-box; min-width: 0; }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.etiqueta { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.fila { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
+.gcab { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.campo { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); min-width: 0; }
+.campo small { font-size: 11px; }
+.ro { margin: 0; }
+.ro span { color: var(--fg); font-size: 15px; padding: 8px 0; font-variant-numeric: tabular-nums; }
+.fila3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: end; margin: 10px 0; }
+.series { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+
+.seg { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; margin: 10px 0; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 8px 6px; border-radius: 8px; color: var(--muted); font-weight: 500; }
+.seg button.on { background: var(--surface); color: var(--fg); font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.mini { margin: 6px 0 0; }
+
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 12px 16px; font-weight: 600; width: 100%; }
+.btn:disabled { opacity: 0.4; }
+.btn.sec { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.acciones { display: flex; gap: 8px; margin-top: 4px; }
+.acciones .btn { flex: 1; }
+.link { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 4px; white-space: nowrap; }
+.peligro { color: var(--danger) !important; font-weight: 600; }
+
+.ej { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.ejcab { display: flex; gap: 6px; align-items: center; }
+.nombre { flex: 1; min-width: 0; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 600; font-size: 16px;
+  border: 0; border-bottom: 1px dashed var(--line); border-radius: 0; background: transparent; padding: 6px 4px; }
+.ico { background: none; border: 1px solid var(--line); border-radius: 8px; width: 38px; height: 38px; display: grid;
+  place-items: center; color: var(--muted); flex: none; padding: 0; }
+.ico svg { width: 18px; height: 18px; }
+.agregarEj { display: flex; gap: 8px; margin-top: 12px; }
+.agregarEj input { flex: 1; }
+.agregarEj button { background: var(--fg); color: var(--bg); border: 0; border-radius: 8px; padding: 0 14px; font-weight: 600; }
+
+.total { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.total strong { color: var(--fg); font-size: 18px; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; font-size: 13px; background: none; color: var(--fg); }
+.chip.falta { color: var(--muted); border-style: dashed; }
+.aviso { background: var(--accent); color: var(--accent-ink); border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 14px; }
+.nota { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+.vacio { color: var(--muted); text-align: center; padding: 28px 8px; }
+
+.stat { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat div { background: var(--bg); border-radius: 10px; padding: 10px; font-size: 13px; color: var(--muted); }
+.stat b { display: block; font-family: "Bricolage Grotesque", system-ui, sans-serif; font-size: 24px; color: var(--fg); font-variant-numeric: tabular-nums; }
+.item { display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.item:first-of-type { border-top: 0; padding-top: 4px; }
+.delta-up { color: var(--ok); font-weight: 600; }
+.delta-down { color: var(--danger); font-weight: 600; }
+.bar { fill: var(--accent); }
+.eje { fill: var(--muted); font-size: 10px; }
+.grid { stroke: var(--line); }
+.txt-sm { fill: var(--muted); }
+
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: max(8px, env(safe-area-inset-left, 0px));
+  padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+.tabs button { background: none; border: 0; padding: 12px 4px; color: var(--muted); font-size: 13px; font-weight: 500; }
+.tabs button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  background: var(--fg); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: 14px;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; }
+.toast.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<header class="top"><h1 id="titulo">Entrenamiento</h1></header>
+<main id="vista"></main>
+<nav class="tabs">
+  <button data-tab="hoy">Entrenar</button>
+  <button data-tab="historial">Historial</button>
+  <button data-tab="reportes">Reportes</button>
+  <button data-tab="perfil">Perfil</button>
+</nav>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+const KEY = "registroGym.v1";
+const GRUPOS = ["Pecho", "Espalda", "Hombros", "Bíceps", "Tríceps", "Piernas", "Cuádriceps", "Glúteos", "Abdominales"];
+const INTENS = { Suave: 3.5, Moderada: 5, Intensa: 6 }; // MET aproximados para musculación
+const MET_ISO = 3.8;                                    // isométricos (plancha, sostener disco)
+const PERFIL_BASE = { altura: 186, edad: 31, peso: 112 };
+const LAPIZ = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+const BASURA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>';
+
+const $ = s => document.querySelector(s);
+const vista = $("#vista");
+let st, tab = "hoy", rango = "semana", conf = null, toastT;
+
+/* ---------- utilidades ---------- */
+function esc(t) { return String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function p2(n) { return String(n).padStart(2, "0"); }
+function fechaStr(d) { return d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()); }
+function parseF(s) { const [a, m, d] = s.split("-").map(Number); return new Date(a, m - 1, d); }
+function hoy() { return fechaStr(new Date()); }
+function sumarDias(s, n) { const d = parseF(s); d.setDate(d.getDate() + n); return fechaStr(d); }
+function largo(s) { const t = parseF(s).toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }); return t.charAt(0).toUpperCase() + t.slice(1); }
+function corto(s) { return parseF(s).toLocaleDateString("es-AR", { day: "numeric", month: "short" }); }
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2200); }
+
+/* ---------- datos ---------- */
+function nuevoBorrador() { return { id: uid(), fecha: hoy(), intensidad: "Moderada", pesoCorporal: st.perfil.peso, grupos: [] }; }
+function cargar() {
+  let o = {};
+  try { o = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  const s = { perfil: { ...PERFIL_BASE, ...(o.perfil || {}) }, sesiones: o.sesiones || [], borrador: null, editId: o.editId || null, edicion: o.edicion || null };
+  s.borrador = o.borrador || { id: uid(), fecha: hoy(), intensidad: "Moderada", pesoCorporal: s.perfil.peso, grupos: [] };
+  return s;
+}
+function guardar() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+function activa() { return st.edicion || st.borrador; }
+function buscarEj(id) {
+  for (const g of activa().grupos) { const e = g.ejercicios.find(x => x.id === id); if (e) return { g, e }; }
+  return null;
+}
+function setSeries(e, n) {
+  n = Math.min(10, Math.max(1, Number(n) || 1));
+  e.series = n;
+  const ult = (arr, def) => arr.length ? arr[arr.length - 1] : def;
+  while (e.reps.length < n) e.reps.push(ult(e.reps, 10));
+  while (e.segs.length < n) e.segs.push(ult(e.segs, 30));
+}
+
+/* ---------- cálculo de calorías ----------
+   Repeticiones: 3 s por rep + 1,5 min de descanso por serie.
+   Tiempo: tiempo real de cada serie + 1 min de descanso.
+   kcal = MET x peso corporal (kg) x horas. Es un estimado. */
+function calcEj(e, s) {
+  const met = e.modo === "tiempo" ? MET_ISO : INTENS[s.intensidad];
+  let min;
+  if (e.modo === "tiempo") min = e.segs.slice(0, e.series).reduce((a, b) => a + (Number(b) || 0), 0) / 60 + e.series * 1;
+  else min = e.reps.slice(0, e.series).reduce((a, r) => a + (Number(r) || 0) * 3 / 60 + 1.5, 0);
+  return { min, kcal: met * (Number(s.pesoCorporal) || 0) * (min / 60) };
+}
+function totales(s) {
+  let kcal = 0, min = 0, series = 0, ejs = 0;
+  s.grupos.forEach(g => g.ejercicios.forEach(e => {
+    const r = calcEj(e, s); kcal += r.kcal; min += r.min; series += e.series; ejs++;
+  }));
+  return { kcal: Math.round(kcal), min: Math.round(min), series, ejs };
+}
+
+/* ---------- vistas ---------- */
+const ICON_LAPIZ = LAPIZ, ICON_BASURA = BASURA;
+
+function vHoy() {
+  const s = activa(), t = totales(s), ed = !!st.edicion;
+  let h = `<section class="card">`;
+  if (ed) h += `<div class="aviso">Estás editando la sesión del ${esc(largo(s.fecha))}. Los cambios se guardan recién al tocar "Guardar cambios".</div>`;
+  h += `<div class="fila">
+          <div><p class="etiqueta">Fecha</p><h2>${esc(largo(s.fecha))}</h2></div>
+          <label class="campo" style="width:112px">Peso hoy (kg)<input type="number" step="0.1" inputmode="decimal" data-k="pesoCorporal" value="${s.pesoCorporal}"></label>
+        </div>
+        <div class="seg" role="group" aria-label="Intensidad">${Object.keys(INTENS).map(k =>
+          `<button data-act="intens" data-v="${k}" class="${s.intensidad === k ? "on" : ""}">${k}</button>`).join("")}</div>
+        <p class="total">Gasto estimado: <strong data-total>${t.kcal}</strong> kcal · <span data-min>${t.min}</span> min</p>
+      </section>`;
+  s.grupos.forEach(g => h += vGrupo(g, s));
+  const usados = s.grupos.map(g => g.nombre);
+  const libres = GRUPOS.filter(n => !usados.includes(n));
+  if (libres.length) h += `<section class="card"><p class="etiqueta">Agregar grupo muscular</p>
+      <div class="chips">${libres.map(n => `<button class="chip" data-act="agregarGrupo" data-v="${n}">+ ${n}</button>`).join("")}</div></section>`;
+  h += `<div class="acciones">`;
+  if (ed) h += `<button class="btn sec" data-act="cancelarEdicion">Cancelar</button>
+               <button class="btn" data-act="guardarCambios" ${t.ejs ? "" : "disabled"}>Guardar cambios</button>`;
+  else h += `<button class="btn" data-act="guardarSesion" ${t.ejs ? "" : "disabled"}>Guardar sesión</button>`;
+  h += `</div>`;
+  return h;
+}
+function vGrupo(g, s) {
+  const pend = conf === "g:" + g.id;
+  let h = `<section class="card">
+      <div class="gcab"><h3>${esc(g.nombre)}</h3>
+        <button class="link ${pend ? "peligro" : ""}" data-act="quitarGrupo" data-id="${g.id}">${pend ? "Confirmar" : "Quitar grupo"}</button></div>`;
+  g.ejercicios.forEach(e => h += vEj(e, s));
+  h += `<form class="agregarEj" data-form="ej" data-gid="${g.id}">
+          <input name="nombre" placeholder="Ej: Curl de bíceps" maxlength="60" autocomplete="off" required>
+          <button type="submit">Agregar</button>
+        </form></section>`;
+  return h;
+}
+function vEj(e, s) {
+  const pend = conf === "e:" + e.id, r = calcEj(e, s);
+  const esT = e.modo === "tiempo";
+  const arr = esT ? e.segs : e.reps, k = esT ? "segs" : "reps", u = esT ? "seg" : "reps";
+  let h = `<article class="ej">
+    <div class="ejcab">
+      <input class="nombre" value="${esc(e.nombre)}" data-k="nombre" data-id="${e.id}" aria-label="Nombre del ejercicio">
+      <button class="ico" data-act="editarNombre" data-id="${e.id}" aria-label="Editar nombre">${ICON_LAPIZ}</button>
+      <button class="ico ${pend ? "peligro" : ""}" data-act="borrarEj" data-id="${e.id}" aria-label="${pend ? "Confirmar borrado" : "Borrar ejercicio"}">${pend ? "Sí" : ICON_BASURA}</button>
+    </div>
+    <div class="seg mini">
+      <button data-act="modo" data-id="${e.id}" data-v="reps" class="${!esT ? "on" : ""}">Repeticiones</button>
+      <button data-act="modo" data-id="${e.id}" data-v="tiempo" class="${esT ? "on" : ""}">Tiempo</button>
+    </div>
+    <div class="fila3">
+      <label class="campo">Series<input type="number" min="1" max="10" inputmode="numeric" value="${e.series}" data-cambio="series" data-id="${e.id}"></label>
+      <label class="campo">Peso (kg)<input type="number" min="0" step="0.5" inputmode="decimal" value="${e.peso}" data-k="peso" data-id="${e.id}"></label>
+      <p class="campo ro">Gasto<span data-kcal="${e.id}">${Math.round(r.kcal)} kcal</span></p>
+    </div>
+    <div class="series">${Array.from({ length: e.series }, (_, i) =>
+      `<label class="campo">Serie ${i + 1} <small>(${u})</small>
+         <input type="number" min="0" inputmode="numeric" value="${arr[i] ?? 0}" data-k="${k}" data-id="${e.id}" data-i="${i}"></label>`).join("")}
+    </div>
+  </article>`;
+  return h;
+}
+
+function vHistorial() {
+  if (!st.sesiones.length) return `<p class="vacio">Todavía no guardaste sesiones.<br>Cuando termines una, aparece acá para que puedas editarla.</p>`;
+  return [...st.sesiones].sort((a, b) => b.fecha.localeCompare(a.fecha)).map(s => {
+    const t = totales(s), pend = conf === "s:" + s.id;
+    return `<article class="card">
+      <p class="etiqueta">${esc(corto(s.fecha))}</p>
+      <div class="gcab"><h3>${esc(largo(s.fecha))}</h3><strong style="font-variant-numeric:tabular-nums">${t.kcal} kcal</strong></div>
+      <div class="chips" style="margin:8px 0">${s.grupos.map(g => `<span class="chip">${esc(g.nombre)}</span>`).join("")}</div>
+      <p class="nota">${t.ejs} ejercicios · ${t.series} series · ${s.pesoCorporal} kg</p>
+      <div class="acciones" style="margin-top:12px">
+        <button class="btn sec" data-act="editarSesion" data-id="${s.id}">Editar</button>
+        <button class="btn sec ${pend ? "peligro" : ""}" data-act="borrarSesion" data-id="${s.id}">${pend ? "Confirmar borrado" : "Borrar"}</button>
+      </div>
+    </article>`;
+  }).join("");
+}
+
+function grafico(ini, n, vals) {
+  const W = 320, H = 150, pad = 14, base = H - 22;
+  const max = Math.max(1, ...Object.values(vals));
+  const bw = (W - pad * 2) / n;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kcal estimadas por día" width="100%">`;
+  s += `<line class="grid" x1="${pad}" x2="${W - pad}" y1="${base}" y2="${base}"/>`;
+  s += `<text class="eje" x="${pad}" y="10">${Math.round(max)} kcal máx.</text>`;
+  for (let i = 0; i < n; i++) {
+    const f = sumarDias(ini, i), v = vals[f] || 0;
+    const bh = (base - 22) * v / max, x = pad + i * bw + bw * 0.18, w = bw * 0.64;
+    if (v > 0) s += `<rect class="bar" x="${x.toFixed(1)}" y="${(base - bh).toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx="3"/>`;
+    if (n === 7 || i % 5 === 0 || i === n - 1) {
+      const lbl = n === 7 ? parseF(f).toLocaleDateString("es-AR", { weekday: "narrow" }) : String(parseF(f).getDate());
+      s += `<text class="eje" x="${(x + w / 2).toFixed(1)}" y="${H - 5}" text-anchor="middle">${lbl}</text>`;
+    }
+  }
+  return s + `</svg>`;
+}
+
+function vReportes() {
+  const dias = rango === "semana" ? 7 : 30;
+  const fin = hoy(), ini = sumarDias(fin, -(dias - 1));
+  const ses = st.sesiones.filter(s => s.fecha >= ini && s.fecha <= fin).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  let h = `<div class="seg" role="group" aria-label="Período">
+      <button data-act="rango" data-v="semana" class="${rango === "semana" ? "on" : ""}">Últimos 7 días</button>
+      <button data-act="rango" data-v="mes" class="${rango === "mes" ? "on" : ""}">Últimos 30 días</button></div>`;
+  if (!ses.length) return h + `<p class="vacio">No hay sesiones guardadas en este período.</p>`;
+
+  const kcalDia = {};
+  ses.forEach(s => kcalDia[s.fecha] = (kcalDia[s.fecha] || 0) + totales(s).kcal);
+  const T = ses.reduce((a, s) => { const t = totales(s); a.kcal += t.kcal; a.series += t.series; return a; }, { kcal: 0, series: 0 });
+  const diasGym = new Set(ses.map(s => s.fecha)).size;
+
+  h += `<section class="card"><div class="stat">
+      <div><b>${ses.length}</b>sesiones</div>
+      <div><b>${diasGym}</b>días con gym</div>
+      <div><b>${T.kcal}</b>kcal estimadas</div>
+      <div><b>${T.series}</b>series</div></div></section>`;
+
+  h += `<section class="card"><p class="etiqueta">Kcal estimadas por día</p>${grafico(ini, dias, kcalDia)}</section>`;
+
+  const cuenta = {};
+  GRUPOS.forEach(g => cuenta[g] = 0);
+  ses.forEach(s => new Set(s.grupos.map(g => g.nombre)).forEach(n => cuenta[n] = (cuenta[n] || 0) + 1));
+  const faltan = GRUPOS.filter(g => !cuenta[g]);
+  h += `<section class="card"><p class="etiqueta">Grupos trabajados</p>
+      <div class="chips">${GRUPOS.filter(g => cuenta[g]).map(g => `<span class="chip">${g} · ${cuenta[g]}</span>`).join("")}
+      ${faltan.map(g => `<span class="chip falta">${g} · 0</span>`).join("")}</div>
+      ${faltan.length ? `<p class="nota">Sin trabajar en este período: ${faltan.join(", ")}.</p>` : ""}</section>`;
+
+  const porEj = {};
+  ses.forEach(s => s.grupos.forEach(g => g.ejercicios.forEach(e => {
+    const k = e.nombre.trim().toLowerCase();
+    (porEj[k] = porEj[k] || { nombre: e.nombre.trim(), reg: [] }).reg.push({ fecha: s.fecha, e });
+  })));
+  h += `<section class="card"><p class="etiqueta">Progresión por ejercicio</p>`;
+  Object.values(porEj).sort((a, b) => a.nombre.localeCompare(b.nombre, "es")).forEach(x => {
+    const primero = x.reg[0], ultimo = x.reg[x.reg.length - 1];
+    const d = Math.round((Number(ultimo.e.peso) - Number(primero.e.peso)) * 10) / 10;
+    const cls = d > 0 ? "delta-up" : d < 0 ? "delta-down" : "";
+    const signo = d > 0 ? "▲ +" : d < 0 ? "▼ " : "= ";
+    h += `<div class="item"><div><strong>${esc(x.nombre)}</strong>
+            <div class="nota">${x.reg.length} ${x.reg.length === 1 ? "vez" : "veces"} · última: ${esc(corto(ultimo.fecha))}, ${ultimo.e.peso} kg</div></div>
+          <div>${x.reg.length > 1 ? `<span class="${cls}">${signo}${d} kg</span>` : `<span class="nota">primera vez</span>`}</div></div>`;
+  });
+  h += `</section>`;
+
+  const pc = ses.filter(s => s.pesoCorporal);
+  if (pc.length) {
+    const a = pc[0].pesoCorporal, b = pc[pc.length - 1].pesoCorporal, d = Math.round((b - a) * 10) / 10;
+    h += `<section class="card"><p class="etiqueta">Peso corporal</p>
+      <p style="margin:0"><strong style="font-family:'Bricolage Grotesque';font-size:22px">${a} → ${b} kg</strong>
+      <span class="${d > 0 ? "delta-up" : d < 0 ? "delta-down" : ""}">  ${d > 0 ? "+" : ""}${d} kg</span></p>
+      <p class="nota">Del ${esc(corto(pc[0].fecha))} al ${esc(corto(pc[pc.length - 1].fecha))}.</p></section>`;
+  }
+  return h;
+}
+
+function vPerfil() {
+  const p = st.perfil;
+  return `<section class="card">
+      <label class="campo">Peso base (kg)<input type="number" step="0.1" inputmode="decimal" data-perfil="peso" value="${p.peso}"></label>
+      <label class="campo" style="margin-top:12px">Altura (cm)<input type="number" inputmode="numeric" data-perfil="altura" value="${p.altura}"></label>
+      <label class="campo" style="margin-top:12px">Edad<input type="number" inputmode="numeric" data-perfil="edad" value="${p.edad}"></label>
+      <p class="nota">El peso base se usa para arrancar cada sesión nueva. En Entrenar podés cambiar el peso de cada día.
+      El estimado de calorías usa peso e intensidad; altura y edad quedan guardadas para más adelante.</p>
+    </section>`;
+}
+
+/* ---------- nube (db) ---------- */
+let DB = null, UID = null;
+async function iniciarNube() {
+  try {
+    const C = window.claude;
+    if (!C || !C.use) return;
+    const db = await C.use("db"), user = await C.use("user");
+    if (!db || !user) return;
+    const id = await user.id();
+    if (id) { DB = db; UID = id; }
+  } catch (e) { DB = null; }
+}
+function colSes() { return DB.collection("data/users/" + UID); }
+function sinId(s) { const { id, ...resto } = s; return resto; }
+async function cargarSesiones() {
+  if (!DB) return; // sin nube: quedan las sesiones guardadas en este navegador
+  try {
+    const snap = await colSes().get();
+    const nube = snap.docs.filter(d => d.exists && d.id !== "perfil").map(d => ({ ...d.data(), id: d.id }));
+    // Migración: sesiones guardadas antes en este navegador que todavía no están en la nube
+    const ids = new Set(nube.map(s => s.id));
+    const viejas = st.sesiones.filter(s => !ids.has(s.id));
+    for (const s of viejas) { try { await colSes().doc(s.id).set(sinId(s)); } catch (e) {} }
+    st.sesiones = [...nube, ...viejas];
+  } catch (e) { toast("No pude cargar tus sesiones de la nube"); }
+}
+
+/* ---------- acciones ---------- */
+function actualizarTotales() {
+  const s = activa(), t = totales(s);
+  const a = document.querySelector("[data-total]"), b = document.querySelector("[data-min]");
+  if (a) a.textContent = t.kcal;
+  if (b) b.textContent = t.min;
+  document.querySelectorAll("[data-kcal]").forEach(el => {
+    const r = buscarEj(el.dataset.kcal);
+    if (r) el.textContent = Math.round(calcEj(r.e, s).kcal) + " kcal";
+  });
+}
+async function guardarSesion() {
+  const s = st.borrador;
+  if (!s.grupos.some(g => g.ejercicios.length)) return;
+  if (DB) {
+    try { await colSes().doc(s.id).set(sinId(s)); }
+    catch (e) { toast("No se pudo guardar en la nube. Probá de nuevo."); return; }
+  }
+  st.sesiones.push(s);
+  st.borrador = nuevoBorrador();
+  conf = null; guardar(); render();
+  toast("Sesión guardada");
+}
+async function guardarCambios() {
+  if (DB) {
+    try { await colSes().doc(st.editId).set(sinId(st.edicion)); }
+    catch (e) { toast("No se pudo guardar en la nube. Probá de nuevo."); return; }
+  }
+  const i = st.sesiones.findIndex(x => x.id === st.editId);
+  if (i >= 0) st.sesiones[i] = st.edicion;
+  st.edicion = null; st.editId = null; tab = "historial";
+  guardar(); render(); toast("Cambios guardados");
+}
+
+function render() {
+  const titulos = { hoy: st.edicion ? "Editar sesión" : "Entrenamiento", historial: "Historial", reportes: "Reportes", perfil: "Perfil" };
+  $("#titulo").textContent = titulos[tab];
+  document.querySelectorAll(".tabs button").forEach(b => {
+    if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  const fn = { hoy: vHoy, historial: vHistorial, reportes: vReportes, perfil: vPerfil }[tab];
+  vista.innerHTML = fn();
+}
+
+/* ---------- eventos ---------- */
+vista.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id, v = b.dataset.v;
+  if (a === "editarNombre") {
+    const inp = vista.querySelector(`input.nombre[data-id="${id}"]`);
+    if (inp) { inp.focus(); inp.select(); }
+    return;
+  }
+  if (a === "guardarSesion") return guardarSesion();
+  if (a === "guardarCambios") return guardarCambios();
+  switch (a) {
+    case "intens": activa().intensidad = v; break;
+    case "modo": { const r = buscarEj(id); if (r) r.e.modo = v; break; }
+    case "borrarEj": {
+      if (conf !== "e:" + id) { conf = "e:" + id; break; }
+      const r = buscarEj(id); if (r) r.g.ejercicios = r.g.ejercicios.filter(x => x !== r.e);
+      conf = null; break;
+    }
+    case "quitarGrupo": {
+      if (conf !== "g:" + id) { conf = "g:" + id; break; }
+      const s = activa(); s.grupos = s.grupos.filter(g => g.id !== id);
+      conf = null; break;
+    }
+    case "agregarGrupo": activa().grupos.push({ id: uid(), nombre: v, ejercicios: [] }); conf = null; break;
+    case "cancelarEdicion": st.edicion = null; st.editId = null; tab = "historial"; break;
+    case "rango": rango = v; break;
+    case "editarSesion": {
+      const ses = st.sesiones.find(x => x.id === id); if (!ses) break;
+      st.edicion = JSON.parse(JSON.stringify(ses)); st.editId = id; tab = "hoy"; conf = null; break;
+    }
+    case "borrarSesion": {
+      if (conf !== "s:" + id) { conf = "s:" + id; break; }
+      st.sesiones = st.sesiones.filter(x => x.id !== id); conf = null;
+      if (DB) colSes().doc(id).delete().catch(() => toast("No se pudo borrar en la nube"));
+      break;
+    }
+  }
+  guardar(); render();
+});
+
+vista.addEventListener("submit", e => {
+  const f = e.target;
+  if (f.dataset.form !== "ej") return;
+  e.preventDefault();
+  const nom = f.elements.nombre.value.trim();
+  if (!nom) return;
+  const g = activa().grupos.find(x => x.id === f.dataset.gid);
+  if (!g) return;
+  g.ejercicios.push({ id: uid(), nombre: nom, modo: "reps", series: 3, reps: [10, 10, 10], segs: [30, 30, 30], peso: 0 });
+  guardar(); render();
+});
+
+vista.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.perfil) { st.perfil[t.dataset.perfil] = Number(t.value) || 0; guardar(); return; }
+  const k = t.dataset.k;
+  if (!k) return;
+  const s = activa();
+  if (k === "pesoCorporal") s.pesoCorporal = Number(t.value) || 0;
+  else if (k === "nombre") { const r = buscarEj(t.dataset.id); if (r) r.e.nombre = t.value; }
+  else if (k === "peso") { const r = buscarEj(t.dataset.id); if (r) r.e.peso = Number(t.value) || 0; }
+  else if (k === "reps" || k === "segs") { const r = buscarEj(t.dataset.id); if (r) r.e[k][Number(t.dataset.i)] = Number(t.value) || 0; }
+  guardar(); actualizarTotales();
+});
+
+vista.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.cambio === "series") {
+    const r = buscarEj(t.dataset.id);
+    if (r) { setSeries(r.e, t.value); guardar(); render(); }
+  }
+});
+
+document.querySelector(".tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]");
+  if (!b) return;
+  tab = b.dataset.tab; conf = null; render(); window.scrollTo(0, 0);
+});
+
+(async () => {
+  st = cargar();
+  await iniciarNube();
+  await cargarSesiones();
+  render();
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+
