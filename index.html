@@ -79,6 +79,26 @@ h2{font-size:17px;font-weight:650;margin:0}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;z-index:9;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.guia{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.mapa-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mapa-head .seg{margin:0;width:170px;flex:none}
+.figura svg{display:block;width:min(190px,60vw);height:auto;margin:8px auto 0}
+.sil > *{fill:#ffffff;stroke:#dcdcd6;stroke-width:1.2}
+.zona{cursor:pointer}
+.zona > *{fill:var(--acc);fill-opacity:.14;stroke:var(--acc);stroke-width:1.4;stroke-dasharray:3 2}
+.zona.on > *{fill-opacity:.55;stroke-dasharray:none}
+.zona-no{pointer-events:none}
+.zona-no > *{fill:none;stroke:none}
+.aclar{font-size:13px;color:var(--mute);text-align:center;margin:8px 0 0}
+.centro{text-align:center;margin-top:4px}
+.ejx{padding:12px;border:1px solid var(--line);border-radius:14px;margin-top:8px}
+.ejx strong{font-size:15px;font-weight:600}
+.ejx .mini{margin-top:3px}
+.ejx .ok{color:#1f9d55;font-weight:600}
+.ejx .row{display:flex;gap:8px;margin-top:10px}
+.btn.sm{padding:9px 10px;font-size:14px;margin-top:0;flex:1}
+.pasos{margin:8px 0 0;padding-left:20px;font-size:14px}
+.pasos li{margin:4px 0}
 </style>
 </head>
 <body>
@@ -104,7 +124,86 @@ const auth = getAuth(fb);
 const db = initializeFirestore(fb, { localCache: persistentLocalCache() });
 
 const K2 = "registroGym.v2";
-const GRUPOS = ["Pecho","Espalda","Hombros","Bíceps","Tríceps","Piernas","Cuádriceps","Glúteos","Abdominales"];
+const GRUPOS = ["Pecho","Espalda","Hombros","Bíceps","Tríceps","Piernas","Abdominales"];
+const GRUPO_VIEJO = { "Cuádriceps": "Piernas", "Glúteos": "Piernas" };
+const normG = g => GRUPO_VIEJO[g] || g;
+const ZONAS = {
+  "pecho-arriba": { g: "Pecho", v: "frente", n: "Pecho de arriba", ej: [
+    { n: "Press inclinado con mancuernas", a: "hombros y tríceps", s: ["Recostate en un banco inclinado, a unos 30 o 45 grados.", "Bajá las mancuernas a la altura del pecho y empujá hacia arriba."] },
+    { n: "Aperturas inclinadas con mancuernas", a: "hombros", s: ["Brazos con un poco de flexión, abrí en arco hasta sentir el estiramiento.", "Volvé cerrando el arco despacio."] } ] },
+  "pecho-medio": { g: "Pecho", v: "frente", n: "Pecho del medio", ej: [
+    { n: "Press banca con barra", a: "tríceps y hombros", s: ["Acostado en banco plano, agarre un poco más ancho que los hombros.", "Bajá la barra al pecho y empujá hasta estirar los brazos."] },
+    { n: "Press banca con mancuernas", a: "tríceps", s: ["Mancuernas a la altura del pecho, codos a unos 45 grados.", "Empujá hacia arriba y bajá lento."] } ] },
+  "pecho-abajo": { g: "Pecho", v: "frente", n: "Pecho de abajo", ej: [
+    { n: "Fondos en paralelas", a: "tríceps y hombros", s: ["Sostenete en las barras con el cuerpo levemente inclinado hacia adelante.", "Bajá hasta sentir estiramiento en el pecho y subí."] },
+    { n: "Press declinado con mancuernas", a: "tríceps", s: ["Banco con la cabeza más abajo que los pies.", "Empujá las mancuernas hacia arriba desde la parte baja del pecho."] } ] },
+  "hombro-adelante": { g: "Hombros", v: "frente", n: "Hombro de adelante", ej: [
+    { n: "Press militar con mancuernas", a: "tríceps y pecho de arriba", s: ["Sentado con respaldo, mancuernas a la altura de los hombros.", "Empujá hacia arriba sin arquear la espalda."] },
+    { n: "Press militar con barra", a: "tríceps", s: ["De pie o sentado, barra apoyada en la clavícula.", "Empujá hacia arriba y bajá controlando."] } ] },
+  "hombro-costado": { g: "Hombros", v: "frente", n: "Hombro de costado", ej: [
+    { n: "Elevaciones laterales con mancuernas", a: "trapecio", s: ["De pie, mancuernas a los costados, codos apenas doblados.", "Subí hasta la altura de los hombros y bajá despacio."] },
+    { n: "Elevaciones laterales en polea", a: "trapecio", s: ["Polea baja, agarrá el cable con la mano del lado opuesto.", "Subí el brazo hasta la altura del hombro."] } ] },
+  "hombro-atras": { g: "Hombros", v: "espalda", n: "Hombro de atrás", ej: [
+    { n: "Pájaros con mancuernas", a: "espalda media", s: ["Inclinado hacia adelante, mancuernas colgando.", "Abrí los brazos a los costados con codos levemente doblados."] },
+    { n: "Face pull en polea", a: "espalda media", s: ["Polea a la altura de la cara, con cuerda.", "Tirá hacia la cara separando las manos y apretando atrás."] } ] },
+  "biceps": { g: "Bíceps", v: "frente", n: "Bíceps", ej: [
+    { n: "Curl con barra", a: "antebrazo", s: ["De pie, barra con agarre a la altura de los muslos.", "Subí hasta los hombros sin mover los codos."] },
+    { n: "Curl martillo", a: "antebrazo", s: ["Mancuernas con las palmas mirando al cuerpo.", "Subí sin girar la muñeca."] } ] },
+  "triceps": { g: "Tríceps", v: "espalda", n: "Tríceps", ej: [
+    { n: "Extensión de tríceps en polea con soga", a: "", s: ["De pie frente a la polea alta, codos pegados al cuerpo.", "Empujá hacia abajo hasta estirar los brazos."] },
+    { n: "Fondos entre bancos", a: "pecho y hombros", s: ["Manos en un banco detrás tuyo, piernas estiradas.", "Bajá doblando los codos y subí empujando."] } ] },
+  "dorsal": { g: "Espalda", v: "espalda", n: "Dorsal (laterales)", ej: [
+    { n: "Jalón al pecho", a: "bíceps", s: ["Sentado, agarre ancho, tirá la barra hacia la parte alta del pecho.", "Llevá los codos hacia abajo y atrás."] },
+    { n: "Remo con barra", a: "bíceps y zona lumbar", s: ["Inclinado unos 45 grados, espalda recta, barra colgando.", "Tirá la barra hacia el abdomen."] } ] },
+  "espalda-media": { g: "Espalda", v: "espalda", n: "Espalda media (entre omóplatos)", ej: [
+    { n: "Remo en polea baja", a: "bíceps", s: ["Sentado con los pies apoyados, agarre neutro.", "Tirá hacia el abdomen juntando los omóplatos."] },
+    { n: "Remo con mancuerna a un brazo", a: "bíceps", s: ["Una mano y una rodilla apoyadas en el banco, espalda recta.", "Subí la mancuerna hacia la cadera."] } ] },
+  "lumbar": { g: "Espalda", v: "espalda", n: "Zona lumbar (parte baja)", ej: [
+    { n: "Hiperextensiones", a: "glúteos e isquiotibiales", s: ["Acostado en el banco, con la cadera en el borde.", "Subí el torso hasta quedar alineado, sin pasar de ahí."] },
+    { n: "Peso muerto", a: "glúteos, isquiotibiales y trapecio", s: ["Barra sobre el empeine, espalda recta.", "Empujá el piso con las piernas y subí la barra pegada al cuerpo."] } ] },
+  "abdo-recto": { g: "Abdominales", v: "frente", n: "Abdominal recto (cuadritos)", ej: [
+    { n: "Crunch en el piso", a: "oblicuos", s: ["Acostado con rodillas dobladas, manos detrás de la cabeza sin tirar.", "Subí los hombros despegándolos del piso."] },
+    { n: "Plancha", a: "transverso y glúteos", m: "tiempo", s: ["Apoyá antebrazos y puntas de los pies.", "Mantené el cuerpo recto como una tabla."] } ] },
+  "abdo-oblicuos": { g: "Abdominales", v: "frente", n: "Oblicuos (costados)", ej: [
+    { n: "Crunch oblicuo", a: "abdominal recto", s: ["Acostado, llevá el hombro hacia la rodilla opuesta.", "Subí y bajá despacio."] },
+    { n: "Plancha lateral", a: "cintura", m: "tiempo", s: ["Apoyado sobre un antebrazo, cuerpo en línea recta.", "Mantené la posición."] } ] },
+  "cuadriceps": { g: "Piernas", v: "frente", n: "Cuádriceps (adelante del muslo)", ej: [
+    { n: "Sentadilla con barra", a: "glúteos e isquiotibiales", s: ["Barra en la espalda alta, pies a la altura de los hombros.", "Bajá como si te sentaras hasta la altura de las rodillas y subí."] },
+    { n: "Extensión de cuádriceps en máquina", a: "", s: ["Sentado, el rodillo sobre los tobillos.", "Estirá las piernas sin trabar las rodillas."] } ] },
+  "isquios": { g: "Piernas", v: "espalda", n: "Isquiotibiales (atrás del muslo)", ej: [
+    { n: "Peso muerto rumano", a: "glúteos y zona lumbar", s: ["Barra en las manos, rodillas apenas flexionadas.", "Bajá la barra por delante de las piernas con la espalda recta."] },
+    { n: "Curl femoral acostado", a: "gemelos", s: ["Acostado boca abajo en la máquina.", "Doblá las rodillas llevando el talón hacia el glúteo."] } ] },
+  "gluteos": { g: "Piernas", v: "espalda", n: "Glúteos", ej: [
+    { n: "Hip thrust", a: "isquiotibiales", s: ["Espalda apoyada en un banco, barra sobre la cadera con una almohadilla.", "Empujá la cadera hacia arriba apretando los glúteos."] },
+    { n: "Patada de glúteo en polea", a: "isquiotibiales", s: ["Polea baja con tobillera.", "Llevá la pierna hacia atrás sin arquear la espalda."] } ] },
+  "gemelos": { g: "Piernas", v: "espalda", n: "Gemelos (pantorrilla)", ej: [
+    { n: "Elevación de talones de pie", a: "", s: ["De pie, con la punta de los pies sobre un escalón.", "Subí sobre las puntas y bajá despacio."] },
+    { n: "Elevación de talones sentado", a: "", s: ["Sentado, con peso sobre las rodillas.", "Subí sobre las puntas y bajá lento."] } ] }
+};
+const MAPA = {
+  frente: {
+    "pecho-arriba": '<rect x="66" y="98" width="68" height="22" rx="10"/>',
+    "pecho-medio": '<rect x="66" y="120" width="68" height="22" rx="10"/>',
+    "pecho-abajo": '<rect x="68" y="142" width="64" height="18" rx="9"/>',
+    "hombro-adelante": '<ellipse cx="62" cy="100" rx="12" ry="14"/><ellipse cx="138" cy="100" rx="12" ry="14"/>',
+    "hombro-costado": '<ellipse cx="46" cy="106" rx="10" ry="12"/><ellipse cx="154" cy="106" rx="10" ry="12"/>',
+    "biceps": '<rect x="40" y="120" width="14" height="40" rx="7"/><rect x="146" y="120" width="14" height="40" rx="7"/>',
+    "abdo-recto": '<rect x="88" y="176" width="24" height="58" rx="6"/>',
+    "abdo-oblicuos": '<rect x="74" y="176" width="12" height="58" rx="6"/><rect x="114" y="176" width="12" height="58" rx="6"/>',
+    "cuadriceps": '<rect x="80" y="254" width="18" height="110" rx="9"/><rect x="102" y="254" width="18" height="110" rx="9"/>'
+  },
+  espalda: {
+    "dorsal": '<rect x="66" y="100" width="14" height="96" rx="7"/><rect x="120" y="100" width="14" height="96" rx="7"/>',
+    "espalda-media": '<rect x="84" y="100" width="32" height="40" rx="8"/>',
+    "lumbar": '<rect x="84" y="144" width="32" height="52" rx="8"/>',
+    "hombro-atras": '<ellipse cx="62" cy="100" rx="12" ry="14"/><ellipse cx="138" cy="100" rx="12" ry="14"/>',
+    "triceps": '<rect x="40" y="120" width="14" height="40" rx="7"/><rect x="146" y="120" width="14" height="40" rx="7"/>',
+    "gluteos": '<rect x="78" y="200" width="44" height="40" rx="14"/>',
+    "isquios": '<rect x="80" y="246" width="18" height="62" rx="9"/><rect x="102" y="246" width="18" height="62" rx="9"/>',
+    "gemelos": '<rect x="82" y="312" width="14" height="70" rx="7"/><rect x="104" y="312" width="14" height="70" rx="7"/>'
+  }
+};
+const SIL = '<circle cx="100" cy="36" r="22"/><path d="M90 56 L110 56 L112 72 L88 72 Z"/><path d="M74 84 Q100 76 126 84 L142 98 L136 200 L124 246 L76 246 L64 200 L58 98 Z"/><path d="M58 98 L40 186 L50 192 L70 104 Z"/><path d="M142 98 L160 186 L150 192 L130 104 Z"/><path d="M76 246 L99 246 L97 388 L80 388 Z"/><path d="M101 246 L124 246 L120 388 L103 388 Z"/>';
 const INTENS = { Suave: 3.5, Moderada: 5, Intensa: 6 };
 const MET_ISO = 3.8;
 const PERFIL0 = { peso: 112, altura: 186, edad: 31 };
@@ -134,7 +233,7 @@ const sinId = s => { const { id, ...resto } = s; return resto; };
 /* ---------- estado ---------- */
 let UID = null, LISTO = false, unsubs = [];
 let S = { perfil: { ...PERFIL0 }, entries: [] };
-const ui = { tab: "hoy", fecha: hoy(), edit: null, f: null, confirm: null, rango: "semana", toastT: 0 };
+const ui = { tab: "hoy", fecha: hoy(), edit: null, f: null, confirm: null, rango: "semana", toastT: 0, vista: "frente", zona: null, pasosKey: null };
 function freshForm(extra) {
   return { grupo: null, nombre: "", modo: "reps", intens: "Moderada", series: [{ v: "10", kg: "0" }, { v: "10", kg: "0" }, { v: "10", kg: "0" }], ...(extra || {}) };
 }
@@ -154,7 +253,7 @@ function iniciarEscucha() {
       render();
     }, () => toast("Sin acceso a tus datos")),
     onSnapshot(collection(db, "users", UID, "entries"), snap => {
-      S.entries = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+      S.entries = snap.docs.map(d => ({ ...d.data(), id: d.id, grupo: normG(d.data().grupo) }));
       LISTO = true;
       if (!snap.metadata.fromCache) migrarLocal();
       render();
@@ -217,6 +316,49 @@ function resumen(e) {
 }
 const maxKg = e => Math.max(0, ...e.series.map(s => s.kg));
 
+/* ---------- guía de zonas ---------- */
+const zonasDeGrupo = g => Object.keys(ZONAS).filter(k => ZONAS[k].g === g);
+const vistaDefault = g => { const zs = zonasDeGrupo(g); return zs.length ? ZONAS[zs[0]].v : "frente"; };
+const vecesHecho = n => S.entries.filter(x => x.nombre.trim().toLowerCase() === n.trim().toLowerCase()).length;
+function figura(g, z) {
+  const partes = Object.entries(MAPA[ui.vista]).map(([k, frag]) => {
+    if (ZONAS[k].g !== g) return `<g class="zona-no">${frag}</g>`;
+    return `<g class="zona ${z === k ? "on" : ""}" data-act="zona" data-z="${k}" role="button" aria-label="${esc(ZONAS[k].n)}">${frag}</g>`;
+  }).join("");
+  return `<svg viewBox="0 0 200 400" role="img" aria-label="Dibujo del cuerpo, vista ${ui.vista}"><g class="sil">${SIL.split("/>").map(x => x ? x + "/>" : "").join("")}</g>${partes}</svg>`;
+}
+function tarjetaGuia(e, g) {
+  const veces = vecesHecho(e.n);
+  const abierto = ui.pasosKey === e.n;
+  return `<div class="ejx">
+    <strong>${esc(e.n)}</strong>
+    <p class="mini">Trabaja: ${esc(e.zn)}${e.a ? " · También ayuda: " + esc(e.a) : ""}</p>
+    ${veces ? `<p class="mini ok">Ya lo hiciste ${veces} ${veces === 1 ? "vez" : "veces"}</p>` : ""}
+    ${abierto ? `<ol class="pasos">${e.s.map(p => `<li>${esc(p)}</li>`).join("")}</ol>` : ""}
+    <div class="row">
+      <button class="btn ghost sm" data-act="pasos" data-n="${esc(e.n)}">${abierto ? "Ocultar" : "Cómo se hace"}</button>
+      <button class="btn sm" data-act="usarEj" data-n="${esc(e.n)}">Usar este ejercicio</button>
+    </div>
+  </div>`;
+}
+function vGuia(g) {
+  const z = ui.zona && ZONAS[ui.zona] && ZONAS[ui.zona].g === g ? ui.zona : null;
+  const ejs = (z ? [z] : zonasDeGrupo(g))
+    .flatMap(k => ZONAS[k].ej.map(e => ({ ...e, zk: k, zn: ZONAS[k].n })));
+  ejs.sort((a, b) => vecesHecho(b.n) - vecesHecho(a.n));
+  return `<div class="guia">
+    <div class="mapa-head">
+      <p class="mini">Zonas de ${esc(g)}</p>
+      ${seg("vista", "vista", [["frente", "Frente"], ["espalda", "Espalda"]], ui.vista)}
+    </div>
+    <div class="figura">${figura(g, z)}</div>
+    <p class="aclar">${z ? `Zona marcada: <strong>${esc(ZONAS[z].n)}</strong>` : "Tocá una zona marcada en el dibujo para ver sus ejercicios."}</p>
+    ${z ? `<div class="centro"><button class="link" data-act="verTodos">Ver todos los ejercicios de ${esc(g)}</button></div>` : ""}
+    <p class="mini" style="margin:14px 4px 0">${z ? "Ejercicios de esta zona" : "Todos los ejercicios de " + esc(g)}</p>
+    ${ejs.map(e => tarjetaGuia(e, g)).join("")}
+  </div>`;
+}
+
 /* ---------- vistas ---------- */
 function seg(act, key, opts, cur) {
   return `<div class="seg">${opts.map(([v, l]) => `<button class="${cur === v ? "on" : ""}" data-act="${act}" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
@@ -268,6 +410,7 @@ function vHoy() {
     </div>
     <p class="mini">Grupo muscular</p>
     <div class="chips">${GRUPOS.map(g => `<button class="chip ${f.grupo === g ? "on" : ""}" data-act="grupo" data-v="${g}">${g}</button>`).join("")}</div>
+    ${f.grupo ? vGuia(f.grupo) : ""}
     <label class="campo">Ejercicio
       <input id="nombre" list="ejs" placeholder="Ej: Curl de bíceps" value="${esc(f.nombre)}" autocomplete="off" maxlength="60">
     </label>
@@ -407,7 +550,7 @@ function toast(m) {
 function editar(id) {
   const e = S.entries.find(x => x.id === id);
   if (!e) return;
-  ui.edit = id; ui.fecha = e.fecha; ui.tab = "hoy"; ui.confirm = null;
+  ui.edit = id; ui.fecha = e.fecha; ui.tab = "hoy"; ui.confirm = null; ui.zona = null; ui.pasosKey = null;
   ui.f = { grupo: e.grupo, nombre: e.nombre, modo: e.modo, intens: e.intensidad, series: e.series.map(s => ({ v: String(s.v), kg: String(s.kg) })) };
   render(); window.scrollTo(0, 0);
 }
@@ -427,6 +570,17 @@ function guardarEj() {
   ui.f = freshForm({ grupo: f.grupo });
   render();
   toast(prev ? "Cambios guardados" : "Ejercicio guardado");
+}
+function usarEj(n) {
+  const par = Object.entries(ZONAS).find(([k, z]) => z.ej.some(e => e.n === n));
+  if (!par) return;
+  const [zk, z] = par;
+  const e = z.ej.find(x => x.n === n);
+  ui.f.grupo = z.g; ui.f.nombre = e.n; ui.f.modo = e.m || "reps";
+  ui.zona = zk; ui.pasosKey = null;
+  render();
+  requestAnimationFrame(() => { const el = document.getElementById("nombre"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); });
+  toast("Listo: completá peso y series");
 }
 function autocompletar(nombre) {
   if (ui.edit) return;
@@ -478,7 +632,12 @@ app.addEventListener("click", e => {
   switch (a) {
     case "entrar": entrar(); return;
     case "salir": signOut(auth); return;
-    case "grupo": ui.f.grupo = b.dataset.v; break;
+    case "grupo": ui.f.grupo = b.dataset.v; ui.zona = null; ui.pasosKey = null; ui.vista = vistaDefault(b.dataset.v); break;
+    case "vista": ui.vista = b.dataset.v; ui.zona = null; break;
+    case "zona": { const z = b.dataset.z; ui.zona = ui.zona === z ? null : z; ui.pasosKey = null; break; }
+    case "verTodos": ui.zona = null; break;
+    case "pasos": { const n = b.dataset.n; ui.pasosKey = ui.pasosKey === n ? null : n; break; }
+    case "usarEj": usarEj(b.dataset.n); return;
     case "set": if (b.dataset.k === "modo") ui.f.modo = b.dataset.v; else ui.f.intens = b.dataset.v; break;
     case "agregarSerie": { const last = ui.f.series[ui.f.series.length - 1]; ui.f.series.push({ v: last.v, kg: last.kg }); break; }
     case "quitarSerie": if (ui.f.series.length > 1) ui.f.series.splice(Number(b.dataset.i), 1); break;
